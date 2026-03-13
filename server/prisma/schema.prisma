@@ -1,0 +1,106 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  userId            Int       @id @default(autoincrement())
+  username          String    @unique
+  email             String    @unique
+  password          String
+  profilePictureUrl String?
+  teamId            Int?
+  team              Team?     @relation(fields: [teamId], references: [id])
+  authoredTasks     Task[]    @relation("TaskAuthor")
+  assignedTasks     Task[]    @relation("TaskAssignee")
+}
+
+model Team {
+  id                   Int           @id @default(autoincrement())
+  teamName             String
+  productOwnerUserId   Int?
+  projectManagerUserId Int?
+  users                User[]
+  projectTeams         ProjectTeam[]
+}
+
+model Project {
+  id           Int           @id @default(autoincrement())
+  name         String
+  description  String?
+  startDate    DateTime?
+  endDate      DateTime?
+  tasks        Task[]
+  projectTeams ProjectTeam[]
+  campaigns   Campaign[]
+}
+
+model Task {
+  id             Int          @id @default(autoincrement())
+  title          String
+  description    String?
+  status         String?
+  priority       String?
+  tags           String?
+  startDate      DateTime?
+  dueDate        DateTime?
+  points         Int?
+  projectId      Int
+  project        Project      @relation(fields: [projectId], references: [id])
+  authorUserId   Int?
+  author         User?        @relation("TaskAuthor", fields: [authorUserId], references: [userId])
+  assignedUserId Int?
+  assignee       User?        @relation("TaskAssignee", fields: [assignedUserId], references: [userId])
+  comments       Comment[]
+  attachments    Attachment[]
+}
+
+model ProjectTeam {
+  id        Int     @id @default(autoincrement())
+  teamId    Int
+  team      Team    @relation(fields: [teamId], references: [id])
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id])
+}
+
+model Comment {
+  id     Int    @id @default(autoincrement())
+  text   String
+  taskId Int
+  task   Task   @relation(fields: [taskId], references: [id])
+  userId Int
+}
+
+model Attachment {
+  id           Int    @id @default(autoincrement())
+  fileURL      String
+  fileName     String?
+  taskId       Int
+  task         Task   @relation(fields: [taskId], references: [id])
+  uploadedById Int
+}
+model Campaign {
+  id          Int       @id @default(autoincrement())
+  name        String
+  type        String
+  platform    String
+  budget      Float
+  startDate   DateTime?
+  endDate     DateTime?
+  goal        String?
+  status      String    @default("Draft")
+  targetAge   String?
+  targetLocation String?
+  targetIndustry String?
+  clicks      Int?      @default(0)
+  leads       Int?      @default(0)
+  conversions Int?      @default(0)
+  impressions Int?      @default(0)
+  projectId   Int?
+  project     Project?  @relation(fields: [projectId], references: [id])
+  createdAt   DateTime  @default(now())
+}
