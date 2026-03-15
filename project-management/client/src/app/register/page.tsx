@@ -1,47 +1,43 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [form, setForm] = useState({ username: "", email: "", password: "", confirmPassword: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) { router.push("/"); return; }
+    if (status === "authenticated" && session) { router.push("/"); return; }
+  }, [session, status, router]);
+
   const handleSubmit = async () => {
-    if (form.password !== form.confirmPassword) {
-      return setError("Passwords do not match");
-    }
+    if (!form.username || !form.email || !form.password) return setError("Please fill in all fields");
+    if (form.password !== form.confirmPassword) return setError("Passwords do not match");
+    if (form.password.length < 6) return setError("Password must be at least 6 characters");
     setLoading(true);
     setError("");
     try {
       const res = await fetch("http://localhost:8000/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: form.username,
-          email: form.email,
-          password: form.password,
-        }),
+        body: JSON.stringify({ username: form.username, email: form.email, password: form.password }),
       });
       const data = await res.json();
-      if (!res.ok) return setError(data.message);
-      const result = await signIn("credentials", {
-        email: form.email,
-        password: form.password,
-        redirect: false,
-      });
-      if (result?.error) {
-        router.push("/login");
-      } else {
-        router.push("/");
-      }
+      if (!res.ok) return setError(data.message || "Registration failed");
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      router.push("/");
     } catch {
-      setError("Something went wrong");
+      setError("Cannot connect to server. Make sure it is running.");
     } finally {
       setLoading(false);
     }
@@ -49,15 +45,17 @@ export default function RegisterPage() {
 
   const handleGoogle = () => signIn("google", { callbackUrl: "/" });
 
+  if (status === "loading") return null;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-3">
+          <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mx-auto mb-4">
             <span className="text-white font-bold text-xl">M</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-800">Create your account</h1>
-          <p className="text-gray-400 mt-1 text-sm">Start managing your projects today</p>
+          <p className="text-gray-400 mt-1 text-sm">Start managing projects today</p>
         </div>
 
         {error && (
@@ -68,52 +66,50 @@ export default function RegisterPage() {
 
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium text-gray-700">Username</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Username</label>
             <input
               type="text"
               placeholder="johndoe"
               value={form.username}
-              onChange={(e) => setForm({ ...form, username: e.target.value })}
-              className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
+              onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
+              autoFocus
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">Email Address</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Email Address</label>
             <input
               type="email"
               placeholder="you@example.com"
               value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
+              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">Password</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
+                placeholder="Min 6 characters"
                 value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 pr-10"
+                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 pr-10"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3.5 text-gray-400"
-              >
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
                 {showPassword ? "🙈" : "👁️"}
               </button>
             </div>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-700">Confirm Password</label>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Confirm Password</label>
             <input
               type="password"
               placeholder="Repeat your password"
               value={form.confirmPassword}
-              onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-              className="w-full mt-1 border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
+              onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
+              onKeyDown={e => e.key === "Enter" && handleSubmit()}
+              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
             />
           </div>
 
@@ -127,9 +123,9 @@ export default function RegisterPage() {
         </div>
 
         <div className="flex items-center gap-3 my-5">
-          <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex-1 h-px bg-gray-100" />
           <span className="text-xs text-gray-400">or</span>
-          <div className="flex-1 h-px bg-gray-200" />
+          <div className="flex-1 h-px bg-gray-100" />
         </div>
 
         <button
@@ -147,9 +143,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-gray-500 mt-6">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 font-medium hover:underline">
-            Sign in
-          </Link>
+          <Link href="/login" className="text-blue-600 font-medium hover:underline">Sign in</Link>
         </p>
       </div>
     </div>

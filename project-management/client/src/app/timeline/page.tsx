@@ -1,312 +1,308 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import DashboardWrapper from "@/app/dashboardWrapper";
-import { useGetTasksQuery, useGetCampaignsQuery, useGetProjectsQuery } from "@/state/api";
-import { BarChart2, ChevronLeft, ChevronRight, CheckSquare, Radio } from "lucide-react";
+import { useGetProjectsQuery, useGetTasksQuery } from "@/state/api";
+import { ChevronLeft, ChevronRight, Calendar, Clock, AlertCircle } from "lucide-react";
 
-const PRIORITY_COLORS: Record<string, string> = { Urgent: "#ef4444", High: "#f97316", Medium: "#3b82f6", Low: "#10b981" };
-const CAMPAIGN_COLORS: Record<string, string> = { Active: "#10b981", Draft: "#94a3b8", Paused: "#f59e0b", Completed: "#6366f1" };
-const STATUS_TEXT: Record<string, string> = { "To Do": "bg-gray-100 text-gray-600", "In Progress": "bg-blue-100 text-blue-700", "Review": "bg-yellow-100 text-yellow-700", "Done": "bg-green-100 text-green-700" };
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const FULL_MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
-function TimelineContent() {
-  const today = new Date();
-  const [viewStart, setViewStart] = useState(() => {
-    const d = new Date(today);
-    d.setDate(1);
-    return d;
-  });
-  const [view, setView] = useState<"month" | "quarter">("month");
-  const [filter, setFilter] = useState<"all" | "tasks" | "campaigns">("all");
+const STATUS_COLORS = [
+  { bg: "bg-blue-500", light: "bg-blue-100", text: "text-blue-700", border: "border-blue-300" },
+  { bg: "bg-purple-500", light: "bg-purple-100", text: "text-purple-700", border: "border-purple-300" },
+  { bg: "bg-green-500", light: "bg-green-100", text: "text-green-700", border: "border-green-300" },
+  { bg: "bg-orange-500", light: "bg-orange-100", text: "text-orange-700", border: "border-orange-300" },
+  { bg: "bg-pink-500", light: "bg-pink-100", text: "text-pink-700", border: "border-pink-300" },
+  { bg: "bg-teal-500", light: "bg-teal-100", text: "text-teal-700", border: "border-teal-300" },
+];
 
+function getDaysInMonth(year: number, month: number) {
+  return new Date(year, month + 1, 0).getDate();
+}
+
+function getBarStyle(startDate: Date | null, endDate: Date | null, viewStart: Date, totalDays: number) {
+  if (!startDate && !endDate) return null;
+  const now = new Date();
+  const effectiveStart = startDate || now;
+  const effectiveEnd = endDate || new Date(effectiveStart.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const viewEnd = new Date(viewStart.getTime() + totalDays * 24 * 60 * 60 * 1000);
+
+  if (effectiveEnd < viewStart || effectiveStart > viewEnd) return null;
+
+  const clampedStart = effectiveStart < viewStart ? viewStart : effectiveStart;
+  const clampedEnd = effectiveEnd > viewEnd ? viewEnd : effectiveEnd;
+
+  const startOffset = Math.max(0, (clampedStart.getTime() - viewStart.getTime()) / (1000 * 60 * 60 * 24));
+  const duration = Math.max(1, (clampedEnd.getTime() - clampedStart.getTime()) / (1000 * 60 * 60 * 24));
+
+  const left = (startOffset / totalDays) * 100;
+  const width = (duration / totalDays) * 100;
+
+  return { left: `${left}%`, width: `${Math.min(width, 100 - left)}%` };
+}
+
+export default function TimelinePage() {
   const { data: projects = [] } = useGetProjectsQuery();
-  const { data: campaigns = [] } = useGetCampaignsQuery();
-  const { data: tasks = [] } = useGetTasksQuery({ projectId: projects[0]?.id }, { skip: !projects[0]?.id });
+  const today = new Date();
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
+  const [selectedProject, setSelectedProject] = useState<any>(null);
 
-  // Days to show
-  const daysToShow = view === "month" ? 30 : 90;
-  const days: Date[] = [];
-  for (let i = 0; i < daysToShow; i++) {
-    const d = new Date(viewStart);
-    d.setDate(viewStart.getDate() + i);
-    days.push(d);
-  }
+  const daysInMonth = getDaysInMonth(viewYear, viewMonth);
+  const viewStart = new Date(viewYear, viewMonth, 1);
+  const dayHeaders = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-  const viewEnd = days[days.length - 1];
-  const totalDays = daysToShow;
-
-  const getLeft = (date: Date) => {
-    const diff = Math.floor((date.getTime() - viewStart.getTime()) / (1000 * 60 * 60 * 24));
-    return Math.max(0, (diff / totalDays) * 100);
+  const prevMonth = () => {
+    if (viewMonth === 0) { setViewMonth(11); setViewYear(y => y - 1); }
+    else setViewMonth(m => m - 1);
   };
-  const getWidth = (start: Date, end: Date) => {
-    const s = Math.max(start.getTime(), viewStart.getTime());
-    const e = Math.min(end.getTime(), viewEnd.getTime());
-    const diff = Math.floor((e - s) / (1000 * 60 * 60 * 24)) + 1;
-    return Math.max(0.5, (diff / totalDays) * 100);
+  const nextMonth = () => {
+    if (viewMonth === 11) { setViewMonth(0); setViewYear(y => y + 1); }
+    else setViewMonth(m => m + 1);
   };
-  const isInRange = (start?: Date, end?: Date) => {
-    if (!start && !end) return false;
-    const s = start || end!;
-    const e = end || start!;
-    return s <= viewEnd && e >= viewStart;
+  const goToToday = () => { setViewMonth(today.getMonth()); setViewYear(today.getFullYear()); };
+
+  const todayOffset = viewYear === today.getFullYear() && viewMonth === today.getMonth()
+    ? ((today.getDate() - 1) / daysInMonth) * 100
+    : null;
+
+  const projectsWithDates = projects.filter((p: any) => p.startDate || p.endDate);
+  const projectsWithoutDates = projects.filter((p: any) => !p.startDate && !p.endDate);
+
+  const getProgress = (p: any) => {
+    if (!p.startDate || !p.endDate) return 0;
+    const start = new Date(p.startDate).getTime();
+    const end = new Date(p.endDate).getTime();
+    const now = today.getTime();
+    if (now <= start) return 0;
+    if (now >= end) return 100;
+    return Math.round(((now - start) / (end - start)) * 100);
   };
 
-  const prev = () => { const d = new Date(viewStart); d.setDate(d.getDate() - (view === "month" ? 30 : 90)); setViewStart(d); };
-  const next = () => { const d = new Date(viewStart); d.setDate(d.getDate() + (view === "month" ? 30 : 90)); setViewStart(d); };
-  const goToday = () => { const d = new Date(today); d.setDate(today.getDate() - 5); setViewStart(d); };
-
-  const todayLeft = getLeft(today);
-  const showToday = todayLeft >= 0 && todayLeft <= 100;
-
-  // Task rows
-  const taskRows = tasks
-    .filter(t => t.startDate || t.dueDate)
-    .filter(() => filter === "all" || filter === "tasks")
-    .filter(t => {
-      const s = t.startDate ? new Date(t.startDate) : t.dueDate ? new Date(t.dueDate) : null;
-      const e = t.dueDate ? new Date(t.dueDate) : t.startDate ? new Date(t.startDate) : null;
-      return s && e && isInRange(s, e);
-    });
-
-  // Campaign rows
-  const campaignRows = campaigns
-    .filter(c => c.startDate || c.endDate)
-    .filter(() => filter === "all" || filter === "campaigns")
-    .filter(c => {
-      const s = c.startDate ? new Date(c.startDate) : c.endDate ? new Date(c.endDate) : null;
-      const e = c.endDate ? new Date(c.endDate) : c.startDate ? new Date(c.startDate) : null;
-      return s && e && isInRange(s, e);
-    });
-
-  // Week markers
-  const weekMarkers = days.filter(d => d.getDay() === 1);
-  // Month markers
-  const monthMarkers = days.filter((d, i) => i === 0 || d.getDate() === 1);
-
-  const ROW_HEIGHT = 44;
+  const getStatus = (p: any) => {
+    if (!p.endDate) return { label: "No deadline", color: "bg-gray-100 text-gray-500" };
+    const end = new Date(p.endDate);
+    if (end < today) return { label: "Overdue", color: "bg-red-100 text-red-600" };
+    const daysLeft = Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    if (daysLeft <= 7) return { label: `${daysLeft}d left`, color: "bg-orange-100 text-orange-600" };
+    if (daysLeft <= 30) return { label: `${daysLeft}d left`, color: "bg-yellow-100 text-yellow-600" };
+    return { label: `${daysLeft}d left`, color: "bg-green-100 text-green-600" };
+  };
 
   return (
-    <div className="space-y-0 -m-6">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-            <BarChart2 size={20} className="text-white" />
-          </div>
+    <DashboardWrapper>
+      <div className="p-6 max-w-full">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-base font-bold text-gray-800">Timeline</h1>
-            <p className="text-xs text-gray-400">Gantt view of tasks & campaigns</p>
+            <h1 className="text-2xl font-bold text-gray-800">Timeline</h1>
+            <p className="text-gray-400 text-sm mt-0.5">Project schedule and Gantt view</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={goToToday} className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600">Today</button>
+            <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-lg overflow-hidden">
+              <button onClick={prevMonth} className="p-2 hover:bg-gray-50"><ChevronLeft size={16} /></button>
+              <span className="px-3 py-1.5 text-sm font-medium text-gray-700 min-w-[130px] text-center">
+                {FULL_MONTHS[viewMonth]} {viewYear}
+              </span>
+              <button onClick={nextMonth} className="p-2 hover:bg-gray-50"><ChevronRight size={16} /></button>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Filter */}
-          <div className="flex border border-gray-200 rounded-lg overflow-hidden">
-            {[["all", "All"], ["tasks", "Tasks"], ["campaigns", "Campaigns"]].map(([val, label]) => (
-              <button key={val} onClick={() => setFilter(val as any)}
-                className={`px-3 py-1.5 text-xs font-medium transition ${filter === val ? "bg-blue-600 text-white" : "text-gray-500 hover:bg-gray-50"}`}>
-                {label}
-              </button>
-            ))}
-          </div>
-          {/* View */}
-          <div className="flex border border-gray-200 rounded-lg overflow-hidden">
-            {[["month", "30 Days"], ["quarter", "90 Days"]].map(([val, label]) => (
-              <button key={val} onClick={() => setView(val as any)}
-                className={`px-3 py-1.5 text-xs font-medium transition ${view === val ? "bg-blue-600 text-white" : "text-gray-500 hover:bg-gray-50"}`}>
-                {label}
-              </button>
-            ))}
-          </div>
-          <button onClick={goToday} className="px-3 py-1.5 text-xs font-medium border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600">Today</button>
-          <button onClick={prev} className="p-1.5 border border-gray-200 rounded-lg hover:bg-gray-50"><ChevronLeft size={16} className="text-gray-500" /></button>
-          <button onClick={next} className="p-1.5 border border-gray-200 rounded-lg hover:bg-gray-50"><ChevronRight size={16} className="text-gray-500" /></button>
+
+        {/* Summary Cards */}
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          {[
+            { label: "Total Projects", value: projects.length, icon: Calendar, color: "text-blue-600 bg-blue-50" },
+            { label: "With Timeline", value: projectsWithDates.length, icon: Clock, color: "text-green-600 bg-green-50" },
+            { label: "Overdue", value: projects.filter((p: any) => p.endDate && new Date(p.endDate) < today).length, icon: AlertCircle, color: "text-red-600 bg-red-50" },
+            { label: "No Dates Set", value: projectsWithoutDates.length, icon: Calendar, color: "text-gray-600 bg-gray-50" },
+          ].map(s => (
+            <div key={s.label} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${s.color} mb-2`}>
+                <s.icon size={18} />
+              </div>
+              <p className="text-2xl font-bold text-gray-800">{s.value}</p>
+              <p className="text-xs text-gray-400">{s.label}</p>
+            </div>
+          ))}
         </div>
-      </div>
 
-      <div className="p-6">
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          {/* Legend */}
-          <div className="flex items-center gap-5 px-5 py-3 border-b border-gray-100 flex-wrap">
-            {[
-              { color: "#ef4444", label: "Urgent" }, { color: "#f97316", label: "High" },
-              { color: "#3b82f6", label: "Medium" }, { color: "#10b981", label: "Low / Active Campaign" },
-              { color: "#6366f1", label: "Completed Campaign" }, { color: "#f59e0b", label: "Paused Campaign" },
-            ].map(({ color, label }) => (
-              <div key={label} className="flex items-center gap-1.5">
-                <div className="w-3 h-2 rounded-sm" style={{ background: color }} />
-                <span className="text-xs text-gray-400">{label}</span>
-              </div>
-            ))}
+        {/* Gantt Chart */}
+        {projects.length === 0 ? (
+          <div className="bg-white rounded-xl p-16 text-center shadow-sm border border-gray-100">
+            <Calendar size={48} className="mx-auto mb-4 text-gray-200" />
+            <p className="text-gray-400 font-medium">No projects yet</p>
+            <p className="text-gray-300 text-sm mt-1">Create projects with start and end dates to see the timeline</p>
           </div>
-
-          <div className="flex">
-            {/* Left labels */}
-            <div className="w-52 flex-shrink-0 border-r border-gray-100">
-              {/* Header spacer */}
-              <div className="h-10 border-b border-gray-100 px-4 flex items-center">
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Name</span>
+        ) : (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Gantt Header */}
+            <div className="flex border-b border-gray-100">
+              <div className="w-64 shrink-0 px-4 py-3 border-r border-gray-100 bg-gray-50">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Project</p>
               </div>
-
-              {/* Task labels */}
-              {(filter === "all" || filter === "tasks") && taskRows.length > 0 && (
-                <>
-                  <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
-                    <div className="flex items-center gap-1.5">
-                      <CheckSquare size={12} className="text-blue-500" />
-                      <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Tasks</span>
-                    </div>
-                  </div>
-                  {taskRows.map(t => (
-                    <div key={t.id} className="flex items-center px-4 border-b border-gray-50 hover:bg-gray-50" style={{ height: ROW_HEIGHT }}>
-                      <div className="min-w-0">
-                        <div className="text-xs font-medium text-gray-700 truncate">{t.title}</div>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          {t.priority && <span className="text-xs px-1.5 py-0.5 rounded-full font-medium" style={{ background: `${PRIORITY_COLORS[t.priority]}20`, color: PRIORITY_COLORS[t.priority] }}>{t.priority}</span>}
-                          {t.status && <span className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${STATUS_TEXT[t.status] || "bg-gray-100 text-gray-500"}`}>{t.status}</span>}
-                        </div>
+              <div className="flex-1 relative bg-gray-50">
+                <div className="flex">
+                  {dayHeaders.map(day => {
+                    const date = new Date(viewYear, viewMonth, day);
+                    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                    const isToday = day === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
+                    return (
+                      <div
+                        key={day}
+                        className={`flex-1 py-2 text-center text-xs border-r border-gray-100 last:border-0 font-medium
+                          ${isToday ? "text-blue-600 bg-blue-50" : isWeekend ? "text-gray-300 bg-gray-50" : "text-gray-400"}`}
+                      >
+                        {day}
                       </div>
-                    </div>
-                  ))}
-                </>
-              )}
-
-              {/* Campaign labels */}
-              {(filter === "all" || filter === "campaigns") && campaignRows.length > 0 && (
-                <>
-                  <div className="px-4 py-2 bg-gray-50 border-b border-gray-100">
-                    <div className="flex items-center gap-1.5">
-                      <Radio size={12} className="text-violet-500" />
-                      <span className="text-xs font-semibold text-violet-600 uppercase tracking-wider">Campaigns</span>
-                    </div>
-                  </div>
-                  {campaignRows.map(c => (
-                    <div key={c.id} className="flex items-center px-4 border-b border-gray-50 hover:bg-gray-50" style={{ height: ROW_HEIGHT }}>
-                      <div className="min-w-0">
-                        <div className="text-xs font-medium text-gray-700 truncate">{c.name}</div>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <span className="text-xs px-1.5 py-0.5 rounded-full font-medium" style={{ background: `${CAMPAIGN_COLORS[c.status]}20`, color: CAMPAIGN_COLORS[c.status] }}>{c.status}</span>
-                          <span className="text-xs text-gray-400">{c.platform}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
-
-              {taskRows.length === 0 && campaignRows.length === 0 && (
-                <div className="h-48" />
-              )}
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="w-28 shrink-0 px-3 py-3 bg-gray-50 border-l border-gray-100">
+                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</p>
+              </div>
             </div>
 
-            {/* Gantt chart area */}
-            <div className="flex-1 overflow-x-auto">
-              <div style={{ minWidth: view === "month" ? 800 : 1200 }}>
-                {/* Date header */}
-                <div className="h-10 border-b border-gray-100 relative bg-gray-50">
-                  {/* Month labels */}
-                  {monthMarkers.map((d, i) => (
-                    <div key={i} className="absolute top-0 h-full flex flex-col justify-between"
-                      style={{ left: `${getLeft(d)}%` }}>
-                      <div className="px-2 pt-1 text-xs font-bold text-gray-600 whitespace-nowrap">
-                        {d.toLocaleDateString("en-IN", { month: "short", year: "2-digit" })}
-                      </div>
-                    </div>
-                  ))}
-                  {/* Day labels for month view */}
-                  {view === "month" && days.map((d, i) => (
-                    <div key={i} className="absolute bottom-0 text-center"
-                      style={{ left: `${(i / totalDays) * 100}%`, width: `${(1 / totalDays) * 100}%` }}>
-                      <span className={`text-xs ${d.getDay() === 0 || d.getDay() === 6 ? "text-gray-300" : "text-gray-400"}`}>
-                        {d.getDate()}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+            {/* Project Rows */}
+            {projects.map((project: any, idx: number) => {
+              const color = STATUS_COLORS[idx % STATUS_COLORS.length];
+              const startDate = project.startDate ? new Date(project.startDate) : null;
+              const endDate = project.endDate ? new Date(project.endDate) : null;
+              const barStyle = getBarStyle(startDate, endDate, viewStart, daysInMonth);
+              const progress = getProgress(project);
+              const status = getStatus(project);
 
-                {/* Grid + bars */}
-                <div className="relative">
-                  {/* Background grid */}
-                  <div className="absolute inset-0 pointer-events-none">
-                    {days.map((d, i) => (
-                      <div key={i} className="absolute top-0 bottom-0 border-r border-gray-50"
-                        style={{ left: `${((i + 1) / totalDays) * 100}%` }} />
-                    ))}
-                    {/* Weekend shading */}
-                    {days.map((d, i) => (d.getDay() === 0 || d.getDay() === 6) && (
-                      <div key={`w${i}`} className="absolute top-0 bottom-0 bg-gray-50 opacity-60"
-                        style={{ left: `${(i / totalDays) * 100}%`, width: `${(1 / totalDays) * 100}%` }} />
-                    ))}
+              return (
+                <div
+                  key={project.id}
+                  className="flex border-b border-gray-50 last:border-0 hover:bg-gray-50/50 cursor-pointer transition"
+                  onClick={() => setSelectedProject(selectedProject?.id === project.id ? null : project)}
+                >
+                  {/* Project Name */}
+                  <div className="w-64 shrink-0 px-4 py-3 border-r border-gray-100 flex items-center gap-2">
+                    <div className={`w-2.5 h-2.5 rounded-full ${color.bg} shrink-0`} />
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-800 truncate">{project.name}</p>
+                      <p className="text-xs text-gray-400">
+                        {startDate ? startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "No start"}
+                        {" → "}
+                        {endDate ? endDate.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "No end"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bar Area */}
+                  <div className="flex-1 relative py-3 px-0">
+                    {/* Day grid lines */}
+                    <div className="absolute inset-0 flex pointer-events-none">
+                      {dayHeaders.map(day => {
+                        const date = new Date(viewYear, viewMonth, day);
+                        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+                        return (
+                          <div key={day} className={`flex-1 border-r border-gray-50 last:border-0 ${isWeekend ? "bg-gray-50/50" : ""}`} />
+                        );
+                      })}
+                    </div>
+
                     {/* Today line */}
-                    {showToday && (
-                      <div className="absolute top-0 bottom-0 w-0.5 bg-red-400 z-10"
-                        style={{ left: `${todayLeft}%` }}>
-                        <div className="absolute -top-0 -translate-x-1/2 bg-red-400 text-white text-xs px-1 rounded whitespace-nowrap">Today</div>
+                    {todayOffset !== null && (
+                      <div
+                        className="absolute top-0 bottom-0 w-px bg-blue-400 z-10 pointer-events-none"
+                        style={{ left: `${todayOffset}%` }}
+                      />
+                    )}
+
+                    {/* Project bar */}
+                    {barStyle ? (
+                      <div
+                        className="absolute top-1/2 -translate-y-1/2 h-7 rounded-full overflow-hidden shadow-sm"
+                        style={barStyle}
+                      >
+                        <div className={`h-full w-full ${color.light} border ${color.border} relative flex items-center`}>
+                          {/* Progress fill */}
+                          <div
+                            className={`absolute left-0 top-0 bottom-0 ${color.bg} opacity-40 rounded-full transition-all`}
+                            style={{ width: `${progress}%` }}
+                          />
+                          <span className={`relative z-10 px-2 text-xs font-semibold ${color.text} truncate`}>
+                            {project.name}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <span className="text-xs text-gray-300 italic">
+                          {!project.startDate && !project.endDate ? "No dates" : "Outside view"}
+                        </span>
                       </div>
                     )}
                   </div>
 
-                  {/* Task rows */}
-                  {(filter === "all" || filter === "tasks") && taskRows.length > 0 && (
-                    <>
-                      <div className="bg-gray-50 border-b border-gray-100" style={{ height: 33 }} />
-                      {taskRows.map(t => {
-                        const start = t.startDate ? new Date(t.startDate) : new Date(t.dueDate!);
-                        const end = t.dueDate ? new Date(t.dueDate) : new Date(t.startDate!);
-                        const left = getLeft(start);
-                        const width = getWidth(start, end);
-                        const color = PRIORITY_COLORS[t.priority || "Medium"] || "#3b82f6";
-                        return (
-                          <div key={t.id} className="relative border-b border-gray-50" style={{ height: ROW_HEIGHT }}>
-                            <div className="absolute top-1/2 -translate-y-1/2 rounded-md flex items-center px-2 text-white text-xs font-medium truncate shadow-sm cursor-pointer hover:opacity-90 transition"
-                              style={{ left: `${left}%`, width: `${Math.max(width, 2)}%`, background: color, height: 26 }}
-                              title={`${t.title} | ${t.priority} | ${t.status}`}>
-                              {width > 5 && t.title.slice(0, 20)}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </>
-                  )}
+                  {/* Status */}
+                  <div className="w-28 shrink-0 px-3 py-3 border-l border-gray-100 flex items-center">
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${status.color}`}>
+                      {status.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
-                  {/* Campaign rows */}
-                  {(filter === "all" || filter === "campaigns") && campaignRows.length > 0 && (
-                    <>
-                      <div className="bg-gray-50 border-b border-gray-100" style={{ height: 33 }} />
-                      {campaignRows.map(c => {
-                        const start = c.startDate ? new Date(c.startDate) : new Date(c.endDate!);
-                        const end = c.endDate ? new Date(c.endDate) : new Date(c.startDate!);
-                        const left = getLeft(start);
-                        const width = getWidth(start, end);
-                        const color = CAMPAIGN_COLORS[c.status] || "#6366f1";
-                        return (
-                          <div key={c.id} className="relative border-b border-gray-50" style={{ height: ROW_HEIGHT }}>
-                            <div className="absolute top-1/2 -translate-y-1/2 rounded-md flex items-center px-2 text-white text-xs font-medium truncate shadow-sm cursor-pointer hover:opacity-90 transition"
-                              style={{ left: `${left}%`, width: `${Math.max(width, 2)}%`, background: color, height: 26 }}
-                              title={`${c.name} | ${c.platform} | ${c.status}`}>
-                              {width > 5 && c.name.slice(0, 20)}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </>
-                  )}
-
-                  {taskRows.length === 0 && campaignRows.length === 0 && (
-                    <div className="flex items-center justify-center h-48 text-gray-300 text-sm">
-                      No items with dates in this period. Add start/due dates to tasks or dates to campaigns.
-                    </div>
-                  )}
+        {/* Project Detail Panel */}
+        {selectedProject && (
+          <div className="mt-4 bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h3 className="font-semibold text-gray-800 text-lg">{selectedProject.name}</h3>
+                {selectedProject.description && <p className="text-sm text-gray-400 mt-0.5">{selectedProject.description}</p>}
+              </div>
+              <button onClick={() => setSelectedProject(null)} className="text-gray-300 hover:text-gray-500 text-lg">✕</button>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-xs text-gray-400 mb-1">Start Date</p>
+                <p className="text-sm font-medium text-gray-700">
+                  {selectedProject.startDate ? new Date(selectedProject.startDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "Not set"}
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-xs text-gray-400 mb-1">End Date</p>
+                <p className="text-sm font-medium text-gray-700">
+                  {selectedProject.endDate ? new Date(selectedProject.endDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "Not set"}
+                </p>
+              </div>
+              <div className="bg-gray-50 rounded-lg p-3">
+                <p className="text-xs text-gray-400 mb-1">Progress</p>
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-gray-200 rounded-full h-2">
+                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${getProgress(selectedProject)}%` }} />
+                  </div>
+                  <span className="text-sm font-medium text-gray-700">{getProgress(selectedProject)}%</span>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+        )}
 
-export default function TimelinePage() {
-  return <DashboardWrapper><TimelineContent /></DashboardWrapper>;
+        {/* No-date projects list */}
+        {projectsWithoutDates.length > 0 && (
+          <div className="mt-4 bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+            <h3 className="font-medium text-gray-600 text-sm mb-3 flex items-center gap-2">
+              <AlertCircle size={15} className="text-gray-400" />
+              Projects without dates ({projectsWithoutDates.length})
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {projectsWithoutDates.map((p: any) => (
+                <span key={p.id} className="text-xs bg-gray-100 text-gray-500 px-3 py-1.5 rounded-full">{p.name}</span>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </DashboardWrapper>
+  );
 }
