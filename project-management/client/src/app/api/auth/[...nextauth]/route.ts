@@ -44,7 +44,6 @@ const handler = NextAuth({
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         try {
-          // Auto-register Google users in our DB
           const res = await fetch("http://localhost:8000/auth/google-signin", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -57,20 +56,21 @@ const handler = NextAuth({
           const data = await res.json();
           if (data.token) {
             (user as any).accessToken = data.token;
-            (user as any).userId = data.user.userId;
+            (user as any).dbUserId = data.user.userId;
+            (user as any).dbUsername = data.user.username;
           }
-          return true;
         } catch {
-          return true; // Allow sign in even if DB sync fails
+          // Allow sign in even if DB sync fails
         }
+        return true;
       }
       return true;
     },
     async jwt({ token, user, account }: any) {
       if (user) {
         token.accessToken = (user as any).accessToken;
-        token.userId = (user as any).userId || user.id;
-        token.name = user.name;
+        token.userId = (user as any).dbUserId || user.id;
+        token.username = (user as any).dbUsername || user.name;
         token.email = user.email;
       }
       if (account?.provider === "google") {
@@ -81,13 +81,14 @@ const handler = NextAuth({
     async session({ session, token }: any) {
       session.accessToken = token.accessToken;
       session.user.userId = token.userId;
-      session.user.name = token.name;
+      session.user.username = token.username;
       session.user.email = token.email;
       return session;
     },
   },
   pages: {
     signIn: "/login",
+    error: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
 });

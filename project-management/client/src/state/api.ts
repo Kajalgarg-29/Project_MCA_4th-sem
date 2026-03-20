@@ -26,6 +26,7 @@ export const api = createApi({
     updateTaskStatus: build.mutation<Task, { taskId: number; status: string }>({ query: ({ taskId, status }) => ({ url: `/tasks/${taskId}/status`, method: "PATCH", body: { status } }), invalidatesTags: ["Tasks"] }),
     deleteTask: build.mutation<void, number>({ query: (id) => ({ url: `/tasks/${id}`, method: "DELETE" }), invalidatesTags: ["Tasks"] }),
     getUsers: build.query<User[], void>({ query: () => "/users", providesTags: ["Users"] }),
+    createUser: build.mutation<User, { username: string; email: string; password: string }>({ query: (body) => ({ url: "/users", method: "POST", body }), invalidatesTags: ["Users"] }),
     updateUser: build.mutation<User, { userId: number; data: Partial<User> }>({ query: ({ userId, data }) => ({ url: `/users/${userId}`, method: "PUT", body: data }), invalidatesTags: ["Users"] }),
     deleteUser: build.mutation<void, number>({ query: (id) => ({ url: `/users/${id}`, method: "DELETE" }), invalidatesTags: ["Users"] }),
     getTeams: build.query<Team[], void>({ query: () => "/teams", providesTags: ["Teams"] }),
@@ -75,7 +76,7 @@ export const api = createApi({
 export const {
   useGetProjectsQuery, useCreateProjectMutation, useDeleteProjectMutation,
   useGetTasksQuery, useCreateTaskMutation, useUpdateTaskStatusMutation, useDeleteTaskMutation,
-  useGetUsersQuery, useUpdateUserMutation, useDeleteUserMutation,
+  useGetUsersQuery, useCreateUserMutation, useUpdateUserMutation, useDeleteUserMutation,
   useGetTeamsQuery, useCreateTeamMutation, useUpdateTeamMutation, useDeleteTeamMutation,
   useAddUserToTeamMutation, useRemoveUserFromTeamMutation,
   useGetAttendanceQuery, useGetTodayAttendanceQuery, useGetAttendanceSummaryQuery,
