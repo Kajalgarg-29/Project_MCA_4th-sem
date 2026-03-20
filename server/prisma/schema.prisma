@@ -8,15 +8,16 @@ datasource db {
 }
 
 model User {
-  userId            Int       @id @default(autoincrement())
-  username          String    @unique
-  email             String    @unique
+  userId            Int          @id @default(autoincrement())
+  username          String       @unique
+  email             String       @unique
   password          String
   profilePictureUrl String?
   teamId            Int?
-  team              Team?     @relation(fields: [teamId], references: [id])
-  authoredTasks     Task[]    @relation("TaskAuthor")
-  assignedTasks     Task[]    @relation("TaskAssignee")
+  team              Team?        @relation(fields: [teamId], references: [id])
+  authoredTasks     Task[]       @relation("TaskAuthor")
+  assignedTasks     Task[]       @relation("TaskAssignee")
+  attendance        Attendance[]
 }
 
 model Team {
@@ -36,7 +37,6 @@ model Project {
   endDate      DateTime?
   tasks        Task[]
   projectTeams ProjectTeam[]
-  campaigns   Campaign[]
 }
 
 model Task {
@@ -76,31 +76,58 @@ model Comment {
 }
 
 model Attachment {
-  id           Int    @id @default(autoincrement())
+  id           Int     @id @default(autoincrement())
   fileURL      String
   fileName     String?
   taskId       Int
-  task         Task   @relation(fields: [taskId], references: [id])
+  task         Task    @relation(fields: [taskId], references: [id])
   uploadedById Int
 }
+
+model Attendance {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [userId])
+  date      DateTime  @default(now())
+  checkIn   DateTime?
+  checkOut  DateTime?
+  status    String    @default("Present")
+  notes     String?
+  workHours Float?
+  createdAt DateTime  @default(now())
+}
+
 model Campaign {
   id          Int       @id @default(autoincrement())
   name        String
-  type        String
-  platform    String
-  budget      Float
+  description String?
+  status      String    @default("Draft")
+  type        String    @default("Social Media")
+  budget      Float?
+  spent       Float?    @default(0)
   startDate   DateTime?
   endDate     DateTime?
-  goal        String?
-  status      String    @default("Draft")
-  targetAge   String?
-  targetLocation String?
-  targetIndustry String?
+  target      String?
+  reach       Int?      @default(0)
   clicks      Int?      @default(0)
-  leads       Int?      @default(0)
   conversions Int?      @default(0)
-  impressions Int?      @default(0)
-  projectId   Int?
-  project     Project?  @relation(fields: [projectId], references: [id])
   createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Event {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  type        String    @default("Meeting")
+  date        DateTime
+  startTime   String?
+  endTime     String?
+  location    String?
+  attendees   String?
+  color       String    @default("blue")
+  allDay      Boolean   @default(false)
+  reminder    Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
