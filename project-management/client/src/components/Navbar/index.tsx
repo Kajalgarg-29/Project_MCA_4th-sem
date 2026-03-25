@@ -144,8 +144,8 @@ export default function Navbar() {
                 {notifications.length === 0 ? (
                   <div className="text-center py-10 px-4">
                     <Bell size={32} className="mx-auto mb-2 text-gray-200" />
-                    <p className="text-sm text-gray-400 font-medium">No active reminders</p>
-                    <p className="text-xs text-gray-300 mt-1">Reminders appear here when events are about to start</p>
+                    <p className="text-sm text-gray-400 font-medium">No active reminder</p>
+                    <p className="text-xs text-gray-300 mt-1">Reminders appear when events are about to start</p>
                   </div>
                 ) : (
                   notifications.map((notif: any) => {
