@@ -193,6 +193,6 @@ export const deleteAttendance = async (req: Request, res: Response) => {
     await prisma.attendance.delete({ where: { id: Number(attendanceId) } });
     res.json({ message: "Attendance record deleted" });
   } catch (error: any) {
-    res.status(500).json({ message: "Error deleting attendance", error: error.message });
+    res.status(500).json({ message: "Error while deleting attendance", error: error.message });
   }
 };

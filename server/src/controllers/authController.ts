@@ -67,7 +67,7 @@ export const googleSignIn = async (req: Request, res: Response) => {
     const token = jwt.sign({ userId: user.userId, email: user.email }, JWT_SECRET, { expiresIn: "7d" });
     res.json({ token, user: { userId: user.userId, username: user.username, email: user.email } });
   } catch (error) {
-    console.error("Google signin error:", error);
+    console.error("Google with signin error:", error);
     res.status(500).json({ message: "Error with Google sign in" });
   }
 };
