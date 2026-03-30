@@ -60,17 +60,18 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="w-64 bg-white border-r border-gray-100 h-screen flex flex-col fixed left-0 top-0 z-30 overflow-hidden">
+      <aside className="w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 h-screen flex flex-col fixed left-0 top-0 z-30 overflow-hidden transition-colors duration-200">
+        
         {/* Logo */}
-        <div className="px-5 py-4 border-b border-gray-100 shrink-0">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
           <Link href="/">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
                 <span className="text-white font-bold text-sm">M</span>
               </div>
               <div>
-                <p className="font-bold text-gray-800 leading-tight text-sm">ManageX</p>
-                <p className="text-xs text-gray-400">Management Dashboard</p>
+                <p className="font-bold text-gray-800 dark:text-gray-100 leading-tight text-sm">ManageX</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500">Management Dashboard</p>
               </div>
             </div>
           </Link>
@@ -84,7 +85,10 @@ export default function Sidebar() {
               return (
                 <Link key={item.href} href={item.href}>
                   <div className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition cursor-pointer
-                    ${active ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-600 hover:bg-gray-50 hover:text-gray-800"}`}>
+                    ${active
+                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-gray-200"
+                    }`}>
                     <item.icon size={16} className="shrink-0" />
                     <span>{item.label}</span>
                   </div>
@@ -98,14 +102,14 @@ export default function Sidebar() {
             <div className="flex items-center justify-between px-3 mb-1.5">
               <button
                 onClick={() => setProjectsOpen(!projectsOpen)}
-                className="flex items-center gap-1 text-xs font-semibold text-gray-400 uppercase tracking-wider hover:text-gray-600"
+                className="flex items-center gap-1 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wider hover:text-gray-600 dark:hover:text-gray-300"
               >
                 {projectsOpen ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
                 Projects
               </button>
               <button
                 onClick={() => setShowModal(true)}
-                className="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-100 text-gray-400 hover:text-blue-600 transition"
+                className="w-5 h-5 flex items-center justify-center rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-blue-600 transition"
                 title="New project"
               >
                 <Plus size={13} />
@@ -120,14 +124,17 @@ export default function Sidebar() {
                     <div key={project.id} className="relative group">
                       <Link href={`/projects/${project.id}`}>
                         <div className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition cursor-pointer pr-8
-                          ${active ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-600 hover:bg-gray-50"}`}>
-                          <FolderOpen size={14} className={`shrink-0 ${active ? "text-blue-500" : "text-gray-400"}`} />
+                          ${active
+                            ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
+                            : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+                          }`}>
+                          <FolderOpen size={14} className={`shrink-0 ${active ? "text-blue-500 dark:text-blue-400" : "text-gray-400 dark:text-gray-500"}`} />
                           <span className="truncate">{project.name}</span>
                         </div>
                       </Link>
                       <button
                         onClick={(e) => handleDelete(e, project.id)}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 rounded text-red-400 transition"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded text-red-400 transition"
                         title="Delete project"
                       >
                         <Trash2 size={12} />
@@ -136,7 +143,7 @@ export default function Sidebar() {
                   );
                 })}
                 {projects.length === 0 && (
-                  <p className="text-xs text-gray-400 px-3 py-2 italic">No projects yet</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-600 px-3 py-2 italic">No projects yet</p>
                 )}
               </div>
             )}
@@ -147,9 +154,9 @@ export default function Sidebar() {
       {/* Create Project Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-md">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-bold text-gray-800">Create New Project</h2>
+              <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">Create New Project</h2>
               <button onClick={() => setShowModal(false)}><X size={20} className="text-gray-400" /></button>
             </div>
             <div className="space-y-3">
@@ -159,7 +166,7 @@ export default function Sidebar() {
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 onKeyDown={e => e.key === "Enter" && handleCreate()}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400"
+                className="w-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 placeholder-gray-400 dark:placeholder-gray-500"
                 autoFocus
               />
               <textarea
@@ -167,21 +174,23 @@ export default function Sidebar() {
                 value={form.description}
                 onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
                 rows={2}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 resize-none"
+                className="w-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400 resize-none placeholder-gray-400 dark:placeholder-gray-500"
               />
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Start Date</label>
-                  <input type="date" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400" />
+                  <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">Start Date</label>
+                  <input type="date" value={form.startDate} onChange={e => setForm(f => ({ ...f, startDate: e.target.value }))}
+                    className="w-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400" />
                 </div>
                 <div>
-                  <label className="text-xs text-gray-500 mb-1 block">End Date</label>
-                  <input type="date" value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400" />
+                  <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block">End Date</label>
+                  <input type="date" value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))}
+                    className="w-full border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-400" />
                 </div>
               </div>
             </div>
             <div className="flex gap-3 mt-5">
-              <button onClick={() => setShowModal(false)} className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-lg text-sm">Cancel</button>
+              <button onClick={() => setShowModal(false)} className="flex-1 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 py-2.5 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
               <button onClick={handleCreate} className="flex-1 bg-blue-600 text-white py-2.5 rounded-lg text-sm hover:bg-blue-700">Create Project</button>
             </div>
           </div>

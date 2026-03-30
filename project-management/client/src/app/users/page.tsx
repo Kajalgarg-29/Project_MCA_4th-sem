@@ -33,7 +33,7 @@ export default function UsersPage() {
   const [showPassword, setShowPassword] = useState(false);
 
   const currentUser = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("user") || "{}") : {};
-  const isAdmin = currentUser?.role === "Admin";
+ const isAdmin = currentUser?.role?.toLowerCase() === "admin";
 
   const filtered = users.filter((u: any) => {
     const matchSearch = u.username.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase());

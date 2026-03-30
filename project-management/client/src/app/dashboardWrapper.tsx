@@ -13,9 +13,7 @@ export default function DashboardWrapper({ children }: { children: React.ReactNo
 
   useEffect(() => {
     if (status === "loading") return;
-
     const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-
     if (!token && !session) {
       router.replace("/login");
     } else {
@@ -23,20 +21,28 @@ export default function DashboardWrapper({ children }: { children: React.ReactNo
     }
   }, [status, session, router]);
 
+  // Apply saved theme on mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const dark = savedTheme === "dark" || (!savedTheme && prefersDark);
+    document.documentElement.classList.toggle("dark", dark);
+  }, []);
+
   if (!authorized) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
       <Sidebar />
       <div className="flex-1 flex flex-col ml-64 min-h-screen overflow-hidden">
         <Navbar />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
           {children}
         </main>
       </div>
