@@ -12,7 +12,7 @@ import { useGetProjectsQuery, useCreateProjectMutation, useDeleteProjectMutation
 
 const navItems = [
   { label: "Home", href: "/", icon: Home },
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  // { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Analytics", href: "/analytics", icon: BarChart2 },
   { label: "Timeline", href: "/timeline", icon: Clock },
   { label: "Calendar", href: "/calendar", icon: Calendar },
