@@ -69,7 +69,7 @@ export default function Sidebar() {
                 <span className="text-white font-bold text-sm">M</span>
               </div>
               <div>
-                <p className="font-bold text-gray-800 leading-tight text-sm">Manage X</p>
+                <p className="font-bold text-gray-800 leading-tight text-sm">ManageX</p>
                 <p className="text-xs text-gray-400">Management Dashboard</p>
               </div>
             </div>

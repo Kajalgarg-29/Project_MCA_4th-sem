@@ -13,6 +13,7 @@ model User {
   email             String       @unique
   password          String
   profilePictureUrl String?
+  role              String       @default("Member")
   teamId            Int?
   team              Team?        @relation(fields: [teamId], references: [id])
   authoredTasks     Task[]       @relation("TaskAuthor")
