@@ -13,6 +13,12 @@ export interface CalendarEvent {
   allDay: boolean; reminder?: number; createdAt: string; updatedAt: string;
 }
 
+export interface SEOAnalysisResult {
+  keywords: { word: string; volume: number; difficulty: number; intent: string; priority: string }[];
+  contentGaps: { topic: string; reason: string; urgency: string; icon: string }[];
+  competitors: { name: string; domain: string; score: number; sharedKeywords: number; strengths: string[] }[];
+}
+
 export const api = createApi({
   reducerPath: "api",
   baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
@@ -70,6 +76,7 @@ export const api = createApi({
     updateCalendarEvent: build.mutation<CalendarEvent, { id: number } & Partial<CalendarEvent>>({ query: ({ id, ...body }) => ({ url: `/events/${id}`, method: "PUT", body }), invalidatesTags: ["Events"] }),
     deleteCalendarEvent: build.mutation<void, number>({ query: (id) => ({ url: `/events/${id}`, method: "DELETE" }), invalidatesTags: ["Events"] }),
     searchItems: build.query<any, string>({ query: (query) => `/search?query=${query}` }),
+    analyzeSEO: build.mutation<SEOAnalysisResult, { url: string }>({ query: (body) => ({ url: "/api/seo/analyze", method: "POST", body }) }),
   }),
 });
 
@@ -84,4 +91,5 @@ export const {
   useGetCampaignsQuery, useGetCampaignQuery, useCreateCampaignMutation, useUpdateCampaignMutation, useDeleteCampaignMutation,
   useGetCalendarEventsQuery, useGetAllCalendarEventsQuery, useCreateCalendarEventMutation, useUpdateCalendarEventMutation, useDeleteCalendarEventMutation,
   useSearchItemsQuery,
+  useAnalyzeSEOMutation,
 } = api;

@@ -18,6 +18,7 @@ const navItems = [
   { label: "Calendar", href: "/calendar", icon: Calendar },
   { label: "Campaigns", href: "/campaigns", icon: Radio },
   { label: "Marketing Hub", href: "/marketing", icon: Megaphone },
+  { label: "SEO", href: "/seo", icon: BarChart2 },
   { label: "Attendance", href: "/attendance", icon: Clock },
   { label: "Users", href: "/users", icon: Users },
   { label: "Teams", href: "/teams", icon: Shield },

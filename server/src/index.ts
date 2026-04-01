@@ -10,6 +10,7 @@ import authRoutes from "./routes/authRoutes";
 import attendanceRoutes from "./routes/attendanceRoutes";
 import campaignRoutes from "./routes/campaignRoutes";
 import eventRoutes from "./routes/eventRoutes";
+import seoRoutes from "./routes/seoRoutes";
 
 dotenv.config();
 const app = express();
@@ -25,6 +26,7 @@ app.use("/search", searchRoutes);
 app.use("/attendance", attendanceRoutes);
 app.use("/campaigns", campaignRoutes);
 app.use("/events", eventRoutes);
+app.use("/seo", seoRoutes);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

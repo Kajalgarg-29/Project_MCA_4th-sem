@@ -16,6 +16,7 @@
     "@mui/x-data-grid": "^8.27.5",
     "@reduxjs/toolkit": "^2.11.2",
     "file-saver": "^2.0.5",
+    "groq-sdk": "^1.1.2",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.577.0",
