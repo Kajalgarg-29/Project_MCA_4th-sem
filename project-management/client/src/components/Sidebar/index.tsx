@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Home, LayoutDashboard, BarChart2, Clock, Calendar,
+  Home, LayoutDashboard, BarChart2, Clock, Calendar, FileText, Share2,
   Radio, Megaphone, Users, Shield, Settings,
   ChevronDown, ChevronRight, Plus, X, FolderOpen, Trash2
 } from "lucide-react";
@@ -19,6 +19,8 @@ const navItems = [
   { label: "Campaigns", href: "/campaigns", icon: Radio },
   { label: "Marketing Hub", href: "/marketing", icon: Megaphone },
   { label: "SEO", href: "/seo", icon: BarChart2 },
+  { label: "Reports", href: "/reports", icon: FileText },
+  { label: "Social Media", href: "/social", icon: Share2 },
   { label: "Attendance", href: "/attendance", icon: Clock },
   { label: "Users", href: "/users", icon: Users },
   { label: "Teams", href: "/teams", icon: Shield },
