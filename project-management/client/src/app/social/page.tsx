@@ -5,10 +5,10 @@ import { useGetCampaignsQuery } from "@/state/api";
 import { Heart, MessageCircle, Share2, Eye, MousePointer, Users, Star, TrendingUp } from "lucide-react";
 
 const PLATFORM_CONFIG: Record<string, { name: string; icon: string; color: string; bg: string; border: string; text: string; badge: string; types: string[] }> = {
-  instagram: { name: "Instagram", icon: "📸", color: "#E1306C", bg: "bg-pink-50", border: "border-pink-200", text: "text-pink-600", badge: "bg-pink-100 text-pink-700", types: ["Influencer", "Social Media"] },
-  facebook:  { name: "Facebook",  icon: "👥", color: "#1877F2", bg: "bg-blue-50",  border: "border-blue-200",  text: "text-blue-600",  badge: "bg-blue-100 text-blue-700",  types: ["PPC", "Social Media"] },
-  linkedin:  { name: "LinkedIn",  icon: "💼", color: "#0A66C2", bg: "bg-sky-50",   border: "border-sky-200",   text: "text-sky-700",   badge: "bg-sky-100 text-sky-700",   types: ["Content", "Email"] },
-  twitter:   { name: "Twitter/X", icon: "🐦", color: "#000000", bg: "bg-gray-50",  border: "border-gray-200",  text: "text-gray-800",  badge: "bg-gray-100 text-gray-700", types: ["SEO", "Event", "Other"] },
+  instagram: { name: "Instagram", icon: "📸", color: "#E1306C", bg: "bg-pink-50", border: "border-pink-200", text: "text-pink-600", badge: "bg-pink-100 text-pink-700", types: ["Instagram"] },
+  facebook:  { name: "Facebook",  icon: "👥", color: "#1877F2", bg: "bg-blue-50",  border: "border-blue-200",  text: "text-blue-600",  badge: "bg-blue-100 text-blue-700",  types: ["Facebook"] },
+  linkedin:  { name: "LinkedIn",  icon: "💼", color: "#0A66C2", bg: "bg-sky-50",   border: "border-sky-200",   text: "text-sky-700",   badge: "bg-sky-100 text-sky-700",   types: ["LinkedIn"] },
+  twitter:   { name: "Twitter/X", icon: "🐦", color: "#000000", bg: "bg-gray-50",  border: "border-gray-200",  text: "text-gray-800",  badge: "bg-gray-100 text-gray-700", types: ["Twitter"] },
 };
 
 type PlatformKey = keyof typeof PLATFORM_CONFIG;
@@ -186,7 +186,6 @@ export default function SocialMediaPage() {
                       <td className="px-5 py-3 text-gray-600">{fmt(s.clicks)}</td>
                       <td className="px-5 py-3"><span className={`font-semibold ${parseFloat(ctr) >= 3 ? "text-green-600" : parseFloat(ctr) >= 1 ? "text-yellow-600" : "text-red-500"}`}>{ctr}%</span></td>
                       <td className="px-5 py-3 text-gray-600">{fmt(s.conversions)}</td>
-              
                     </tr>
                   );
                 })}

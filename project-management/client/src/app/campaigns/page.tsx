@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 const STATUSES = ["Draft", "Active", "Paused", "Completed", "Cancelled"];
-const TYPES = ["Social Media", "Email", "SEO", "PPC", "Content", "Influencer", "Event", "Other"];
+const TYPES = ["Social Media", "Email", "SEO", "PPC", "Content", "Influencer", "Event", "Other", "Instagram", "Facebook", "LinkedIn", "Twitter"];
 
 const STATUS_STYLES: Record<string, string> = {
   Draft: "bg-gray-100 text-gray-600",
@@ -38,6 +38,10 @@ const TYPE_COLORS: Record<string, string> = {
   Influencer: "bg-yellow-50 text-yellow-700",
   Event: "bg-red-50 text-red-700",
   Other: "bg-gray-50 text-gray-700",
+  Instagram: "bg-pink-50 text-pink-700",
+  Facebook: "bg-blue-50 text-blue-700",
+  LinkedIn: "bg-sky-50 text-sky-700",
+  Twitter: "bg-gray-50 text-gray-700",
 };
 
 const emptyForm = {
@@ -168,11 +172,12 @@ export default function CampaignsPage() {
         </div>
 
         {/* Filters */}
-        <div className="flex gap-3 mb-5 flex-wrap">
+        <div className="flex gap-3 mb-5 flex-wrap items-center">
           <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
             {["All", ...STATUSES].map(s => (
               <button
                 key={s}
+                type="button"
                 onClick={() => setFilterStatus(s)}
                 className={`px-3 py-1.5 rounded-md text-xs font-medium transition
                   ${filterStatus === s ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
@@ -187,8 +192,17 @@ export default function CampaignsPage() {
             className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-600 outline-none focus:border-blue-400 bg-white"
           >
             <option value="All">All Types</option>
-            {TYPES.map(t => <option key={t}>{t}</option>)}
+            {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
+          {(filterStatus !== "All" || filterType !== "All") && (
+            <button
+              type="button"
+              onClick={() => { setFilterStatus("All"); setFilterType("All"); }}
+              className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1.5 hover:bg-gray-100 rounded-lg transition"
+            >
+              Clear filters ✕
+            </button>
+          )}
         </div>
 
         {/* Content */}
@@ -471,23 +485,15 @@ export default function CampaignsPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-medium text-gray-600 block mb-1">Total Budget (₹)</label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={form.budget}
+                    <input type="number" placeholder="0" value={form.budget}
                       onChange={e => setForm((f: any) => ({ ...f, budget: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    />
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-600 block mb-1">Amount Spent (₹)</label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={form.spent}
+                    <input type="number" placeholder="0" value={form.spent}
                       onChange={e => setForm((f: any) => ({ ...f, spent: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    />
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
                   </div>
                 </div>
               </div>
@@ -498,21 +504,15 @@ export default function CampaignsPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-xs font-medium text-gray-600 block mb-1">Start Date</label>
-                    <input
-                      type="date"
-                      value={form.startDate}
+                    <input type="date" value={form.startDate}
                       onChange={e => setForm((f: any) => ({ ...f, startDate: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    />
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-600 block mb-1">End Date</label>
-                    <input
-                      type="date"
-                      value={form.endDate}
+                    <input type="date" value={form.endDate}
                       onChange={e => setForm((f: any) => ({ ...f, endDate: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    />
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
                   </div>
                 </div>
               </div>
@@ -523,33 +523,21 @@ export default function CampaignsPage() {
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label className="text-xs font-medium text-gray-600 block mb-1">Reach</label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={form.reach}
+                    <input type="number" placeholder="0" value={form.reach}
                       onChange={e => setForm((f: any) => ({ ...f, reach: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    />
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-600 block mb-1">Clicks</label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={form.clicks}
+                    <input type="number" placeholder="0" value={form.clicks}
                       onChange={e => setForm((f: any) => ({ ...f, clicks: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    />
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-600 block mb-1">Conversions</label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={form.conversions}
+                    <input type="number" placeholder="0" value={form.conversions}
                       onChange={e => setForm((f: any) => ({ ...f, conversions: e.target.value }))}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                    />
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
                   </div>
                 </div>
               </div>
@@ -557,13 +545,10 @@ export default function CampaignsPage() {
               {/* Target Audience */}
               <div>
                 <label className="text-xs font-medium text-gray-600 block mb-1">Target Audience</label>
-                <input
-                  type="text"
-                  placeholder="e.g. Women 25-45, interested in fitness"
+                <input type="text" placeholder="e.g. Women 25-45, interested in fitness"
                   value={form.target}
                   onChange={e => setForm((f: any) => ({ ...f, target: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                />
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
               </div>
             </div>
 
