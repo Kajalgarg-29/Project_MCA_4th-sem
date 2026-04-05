@@ -109,7 +109,6 @@ export default function UsersPage() {
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json",
-            // ✅ Send token so backend Admin guard passes
             Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
           },
           body: JSON.stringify({ role: editForm.role }),

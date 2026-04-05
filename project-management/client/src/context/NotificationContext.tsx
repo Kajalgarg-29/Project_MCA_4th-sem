@@ -39,7 +39,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     if (loaded) return;
 
     // Fetch ALL tasks directly (no projectId filter)
-    fetch("http://localhost:8000/tasks")
+       fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/tasks`)
       .then(r => r.json())
       .then((tasks: any[]) => {
         const today = new Date();

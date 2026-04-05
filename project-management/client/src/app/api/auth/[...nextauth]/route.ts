@@ -16,7 +16,9 @@ const handler = NextAuth({
       },
       async authorize(credentials) {
         try {
-          const res = await fetch("http://localhost:8000/auth/login", {
+          
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`, {
+            
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -44,7 +46,7 @@ const handler = NextAuth({
     async signIn({ user, account }) {
       if (account?.provider === "google") {
         try {
-          const res = await fetch("http://localhost:8000/auth/google-signin", {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/google-signin`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

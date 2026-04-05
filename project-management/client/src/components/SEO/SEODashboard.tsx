@@ -15,7 +15,7 @@ export default function SEODashboard() {
     if (!url.trim()) return;
     setLoading(true); setError(""); setResult(null);
     try {
-      const res = await fetch("http://localhost:8000/seo/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/seo/analyze`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: url.trim() }) });
       if (!res.ok) throw new Error("Failed");
       const data = await res.json();
       setResult(data);

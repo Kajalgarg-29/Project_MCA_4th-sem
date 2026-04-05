@@ -8,7 +8,7 @@ export default function CompetitorAnalysis({ competitors: initial }: { competito
     if (!domain.trim()) return;
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/seo/competitor", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: domain.trim() }) });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/seo/competitor`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: domain.trim() }) });
       const data = await res.json();
       setCompetitors(prev => [...prev, data]);
       setDomain("");
