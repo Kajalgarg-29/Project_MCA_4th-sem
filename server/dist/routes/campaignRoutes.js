@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const campaignController_1 = require("../controllers/campaignController");
+const auth_1 = require("../middleware/auth");
+const router = (0, express_1.Router)();
+router.use(auth_1.authenticate);
+router.get("/", campaignController_1.getCampaigns);
+router.get("/:id", campaignController_1.getCampaign);
+router.post("/", campaignController_1.createCampaign);
+router.put("/:id", campaignController_1.updateCampaign);
+router.delete("/:id", campaignController_1.deleteCampaign);
+exports.default = router;
