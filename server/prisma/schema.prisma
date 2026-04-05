@@ -19,6 +19,9 @@ model User {
   authoredTasks     Task[]       @relation("TaskAuthor")
   assignedTasks     Task[]       @relation("TaskAssignee")
   attendance        Attendance[]
+  projects          Project[]
+  campaigns         Campaign[]
+  events            Event[]
 }
 
 model Team {
@@ -36,6 +39,8 @@ model Project {
   description  String?
   startDate    DateTime?
   endDate      DateTime?
+  createdBy    Int?
+  owner        User?         @relation(fields: [createdBy], references: [userId])
   tasks        Task[]
   projectTeams ProjectTeam[]
 }
@@ -112,6 +117,8 @@ model Campaign {
   reach       Int?      @default(0)
   clicks      Int?      @default(0)
   conversions Int?      @default(0)
+  createdBy   Int?
+  owner       User?     @relation(fields: [createdBy], references: [userId])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -129,6 +136,8 @@ model Event {
   color       String    @default("blue")
   allDay      Boolean   @default(false)
   reminder    Int?
+  createdBy   Int?
+  owner       User?     @relation(fields: [createdBy], references: [userId])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }

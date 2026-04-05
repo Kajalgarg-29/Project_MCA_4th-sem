@@ -1,15 +1,9 @@
 import { Router } from "express";
-import {
-  getAttendance,
-  getTodayAttendance,
-  checkIn,
-  checkOut,
-  markAttendance,
-  getAttendanceSummary,
-  deleteAttendance,
-} from "../controllers/attendanceController";
+import { getAttendance, getTodayAttendance, checkIn, checkOut, markAttendance, getAttendanceSummary, deleteAttendance } from "../controllers/attendanceController";
+import { authenticate } from "../middleware/auth";
 
 const router = Router();
+router.use(authenticate);
 router.get("/", getAttendance);
 router.get("/today", getTodayAttendance);
 router.get("/summary", getAttendanceSummary);
