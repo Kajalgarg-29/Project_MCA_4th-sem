@@ -2,7 +2,23 @@
 
 import DashboardWrapper from "@/app/dashboardWrapper";
 import { useGetTasksQuery, useGetProjectsQuery } from "@/state/api";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, AreaChart, Area, LineChart, Line, Legend, CartesianGrid } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie,
+  AreaChart,
+  Area,
+  LineChart,
+  Line,
+  Legend,
+  CartesianGrid,
+} from "recharts";
 import { TrendingUp } from "lucide-react";
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444"];
@@ -31,12 +47,16 @@ export default function AnalyticsPage() {
       <div className="p-6 max-w-7xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-gray-800">Analytics</h1>
-          <p className="text-gray-400 text-sm mt-1">Track your project performance</p>
+          <p className="text-gray-400 text-sm mt-1">
+            Track your project performance
+          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-6 mb-6">
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <h2 className="font-semibold text-gray-800 mb-4">Monthly Tasks Overview</h2>
+            <h2 className="font-semibold text-gray-800 mb-4">
+              Monthly Tasks Overview
+            </h2>
             <ResponsiveContainer width="100%" height={250}>
               <AreaChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" />
@@ -44,17 +64,40 @@ export default function AnalyticsPage() {
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
                 <Legend />
-                <Area type="monotone" dataKey="tasks" stroke="#3b82f6" fill="#eff6ff" name="Total Tasks" />
-                <Area type="monotone" dataKey="completed" stroke="#10b981" fill="#ecfdf5" name="Completed" />
+                <Area
+                  type="monotone"
+                  dataKey="tasks"
+                  stroke="#3b82f6"
+                  fill="#eff6ff"
+                  name="Total Tasks"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="completed"
+                  stroke="#10b981"
+                  fill="#ecfdf5"
+                  name="Completed"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
 
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <h2 className="font-semibold text-gray-800 mb-4">Task Status Distribution</h2>
+            <h2 className="font-semibold text-gray-800 mb-4">
+              Task Status Distribution
+            </h2>
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
-                <Pie data={statusData} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+                <Pie
+                  data={statusData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={90}
+                  dataKey="value"
+                  label={({ name, percent }) =>
+                    `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
+                  }
+                >
                   {statusData.map((_, index) => (
                     <Cell key={index} fill={COLORS[index % COLORS.length]} />
                   ))}
@@ -67,22 +110,39 @@ export default function AnalyticsPage() {
 
         <div className="grid grid-cols-2 gap-6">
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <h2 className="font-semibold text-gray-800 mb-4">Task Completion Trend</h2>
+            <h2 className="font-semibold text-gray-800 mb-4">
+              Task Completion Trend
+            </h2>
             <ResponsiveContainer width="100%" height={220}>
               <LineChart data={monthlyData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
-                <Line type="monotone" dataKey="completed" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
+                <Line
+                  type="monotone"
+                  dataKey="completed"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-            <h2 className="font-semibold text-gray-800 mb-4">Projects Overview</h2>
+            <h2 className="font-semibold text-gray-800 mb-4">
+              Projects Overview
+            </h2>
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={projects.slice(0, 5).map((p: any) => ({ name: p.name.slice(0, 10), tasks: Math.floor(Math.random() * 10) + 1 }))}>
+              <BarChart
+                data={projects
+                  .slice(0, 5)
+                  .map((p: any) => ({
+                    name: p.name.slice(0, 10),
+                    tasks: Math.floor(Math.random() * 10) + 1,
+                  }))}
+              >
                 <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} />
                 <Tooltip />
