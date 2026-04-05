@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { AuthRequest } from "../middleware/auth";
 
@@ -6,25 +6,16 @@ const prisma = new PrismaClient();
 
 export const getProjects = async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.userId;
+    const userId = req.userId!;
     const role = req.userRole;
 
-    // Admin and Manager see all projects
-    // Member sees only their own projects
-    const where = role === "Member" ? { createdBy: userId } : {};
-
     const projects = await prisma.project.findMany({
-      where,
-      include: {
-        owner: { select: { userId: true, username: true, email: true } },
-      },
+      where: role === "Member" ? { createdBy: userId } : undefined,
       orderBy: { id: "desc" },
     });
     res.json(projects);
   } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: "Error fetching projects", error: error.message });
+    res.status(500).json({ message: "Error fetching projects", error: error.message });
   }
 };
 
@@ -38,13 +29,11 @@ export const createProject = async (req: AuthRequest, res: Response) => {
         startDate: startDate ? new Date(startDate) : null,
         endDate: endDate ? new Date(endDate) : null,
         createdBy: req.userId || null,
-      },
+      } as any,
     });
     res.status(201).json(project);
   } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: "Error creating project", error: error.message });
+    res.status(500).json({ message: "Error creating project", error: error.message });
   }
 };
 
@@ -53,22 +42,18 @@ export const deleteProject = async (req: AuthRequest, res: Response) => {
   try {
     const project = await prisma.project.findUnique({
       where: { id: Number(projectId) },
-    });
+    }) as any;
+
     if (!project) return res.status(404).json({ message: "Project not found" });
 
-    // Only owner or Admin can delete
     if (req.userRole !== "Admin" && project.createdBy !== req.userId) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to delete this project" });
+      return res.status(403).json({ message: "Not authorized to delete this project" });
     }
 
     await prisma.task.deleteMany({ where: { projectId: Number(projectId) } });
     await prisma.project.delete({ where: { id: Number(projectId) } });
     res.json({ message: "Project deleted" });
   } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: "Error deleting project", error: error.message });
+    res.status(500).json({ message: "Error deleting project", error: error.message });
   }
 };
