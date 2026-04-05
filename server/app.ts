@@ -10,7 +10,7 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: ["http://localhost:3000", "https://project-mca-4th-sem.vercel.app"],
+  origin: ["http://localhost:3000","https://project-mca-4th-ho4ajsiji-kajalgarg-29s-projects.vercel"],
   credentials: true,
 }));
 app.use(express.json());
