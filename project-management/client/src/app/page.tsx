@@ -11,24 +11,54 @@ import {
   ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell, Legend
 } from "recharts";
 import {
-  TrendingUp, TrendingDown, Users, Target, DollarSign,
-  Eye, MousePointer, ArrowUpRight, ArrowDownRight,
+  TrendingUp, Users, Target, DollarSign,
+  MousePointer, ArrowUpRight, ArrowDownRight,
   FolderOpen, Zap, Award, AlertCircle, ChevronRight,
   Activity, Globe, BarChart2, RefreshCw
 } from "lucide-react";
 
 const COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"];
 
-function KPICard({ title, value, sub, icon: Icon, trend, trendValue, color, prefix = "", suffix = "", onClick }: any) {
+// Hex values for each color prop — avoids Tailwind purging dynamic class names
+const colorHexMap: Record<string, string> = {
+  "bg-blue-500":   "#3b82f6",
+  "bg-green-500":  "#22c55e",
+  "bg-purple-500": "#a855f7",
+  "bg-teal-500":   "#14b8a6",
+  "bg-orange-500": "#f97316",
+  "bg-pink-500":   "#ec4899",
+  "bg-indigo-500": "#6366f1",
+  "bg-red-500":    "#ef4444",
+  "bg-yellow-500": "#eab308",
+};
+
+function KPICard({
+  title, value, sub, icon: Icon, trend, trendValue,
+  color, prefix = "", suffix = "", onClick
+}: any) {
   const isPositive = trend === "up";
+  const hex = colorHexMap[color] ?? "#6b7280";
+
   return (
-    <div onClick={onClick} className={`bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition cursor-pointer group relative overflow-hidden`}>
-      {/* Background decoration */}
-      <div className={`absolute -right-4 -top-4 w-20 h-20 rounded-full opacity-5 ${color}`} />
+    <div
+      onClick={onClick}
+      className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition cursor-pointer relative overflow-hidden"
+    >
+      {/* Decorative background blob */}
+      <div
+        className="absolute -right-4 -top-4 w-20 h-20 rounded-full pointer-events-none"
+        style={{ backgroundColor: hex, opacity: 0.06 }}
+      />
+
       <div className="flex justify-between items-start mb-4">
-        <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${color} bg-opacity-10`}>
-          <Icon size={20} className={color.replace("bg-", "text-")} />
+        {/* Icon box — light tinted background + colored icon via inline style */}
+        <div
+          className="w-11 h-11 rounded-xl flex items-center justify-center"
+          style={{ backgroundColor: hex + "22" }}
+        >
+          <Icon size={22} style={{ color: hex }} />
         </div>
+
         {trendValue && (
           <div className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full
             ${isPositive ? "bg-green-50 text-green-600" : "bg-red-50 text-red-500"}`}>
@@ -37,6 +67,7 @@ function KPICard({ title, value, sub, icon: Icon, trend, trendValue, color, pref
           </div>
         )}
       </div>
+
       <p className="text-3xl font-bold text-gray-800 mb-1">
         {prefix}{value}{suffix}
       </p>
@@ -47,17 +78,17 @@ function KPICard({ title, value, sub, icon: Icon, trend, trendValue, color, pref
 }
 
 export default function Home() {
-  const { data: projects = [] } = useGetProjectsQuery();
-  const { data: users = [] } = useGetUsersQuery();
-  const { data: campaigns = [] } = useGetCampaignsQuery();
+  const { data: projects = [] }   = useGetProjectsQuery();
+  const { data: users = [] }      = useGetUsersQuery();
+  const { data: campaigns = [] }  = useGetCampaignsQuery();
   const today = new Date();
   const { data: attendance = [] } = useGetAttendanceSummaryQuery({
     month: today.getMonth() + 1,
-    year: today.getFullYear(),
+    year:  today.getFullYear(),
   });
 
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [greeting, setGreeting] = useState("");
+  const [greeting, setGreeting]       = useState("");
   const [lastUpdated, setLastUpdated] = useState(new Date());
 
   useEffect(() => {
@@ -68,46 +99,61 @@ export default function Home() {
   }, []);
 
   // ── KPI Calculations ──────────────────────────────────────
-  const totalReach        = campaigns.reduce((s: number, c: any) => s + (c.reach || 0), 0);
-  const totalClicks       = campaigns.reduce((s: number, c: any) => s + (c.clicks || 0), 0);
-  const totalConversions  = campaigns.reduce((s: number, c: any) => s + (c.conversions || 0), 0);
-  const totalBudget       = campaigns.reduce((s: number, c: any) => s + (c.budget || 0), 0);
-  const totalSpent        = campaigns.reduce((s: number, c: any) => s + (c.spent || 0), 0);
-  const activeCampaigns   = campaigns.filter((c: any) => c.status === "Active").length;
+  const totalReach       = campaigns.reduce((s: number, c: any) => s + (c.reach        || 0), 0);
+  const totalClicks      = campaigns.reduce((s: number, c: any) => s + (c.clicks       || 0), 0);
+  const totalConversions = campaigns.reduce((s: number, c: any) => s + (c.conversions  || 0), 0);
+  const totalBudget      = campaigns.reduce((s: number, c: any) => s + (c.budget       || 0), 0);
+  const totalSpent       = campaigns.reduce((s: number, c: any) => s + (c.spent        || 0), 0);
+  const activeCampaigns  = campaigns.filter((c: any) => c.status === "Active").length;
 
-  const conversionRate = totalClicks > 0 ? ((totalConversions / totalClicks) * 100) : 0;
-  const ctr            = totalReach > 0 ? ((totalClicks / totalReach) * 100) : 0;
-  const cpl            = totalConversions > 0 ? (totalSpent / totalConversions) : 0;
-  const roi            = totalSpent > 0 ? (((totalBudget - totalSpent) / totalSpent) * 100) : 0;
+  const conversionRate = totalClicks      > 0 ? (totalConversions / totalClicks) * 100 : 0;
+  const ctr            = totalReach       > 0 ? (totalClicks / totalReach)       * 100 : 0;
+  const cpl            = totalConversions > 0 ? totalSpent / totalConversions          : 0;
+  const roi            = totalSpent       > 0 ? ((totalBudget - totalSpent) / totalSpent) * 100 : 0;
   const budgetLeft     = totalBudget - totalSpent;
 
-  const overdueProjects = projects.filter((p: any) => p.endDate && new Date(p.endDate) < today).length;
+  const overdueProjects = projects.filter(
+    (p: any) => p.endDate && new Date(p.endDate) < today
+  ).length;
 
   // ── Chart Data ─────────────────────────────────────────────
   const monthlyData = [
-    { month: "Oct", reach: 8200,  clicks: 540,  conversions: 28,  spend: 12000 },
-    { month: "Nov", reach: 12500, clicks: 820,  conversions: 45,  spend: 18000 },
-    { month: "Dec", reach: 10800, clicks: 710,  conversions: 38,  spend: 15000 },
-    { month: "Jan", reach: 16200, clicks: 1100, conversions: 62,  spend: 22000 },
-    { month: "Feb", reach: 21500, clicks: 1480, conversions: 84,  spend: 28000 },
-    { month: "Mar", reach: totalReach || 25000, clicks: totalClicks || 1800, conversions: totalConversions || 95, spend: totalSpent || 32000 },
+    { month: "Oct", reach: 8200,  clicks: 540,  conversions: 28, spend: 12000 },
+    { month: "Nov", reach: 12500, clicks: 820,  conversions: 45, spend: 18000 },
+    { month: "Dec", reach: 10800, clicks: 710,  conversions: 38, spend: 15000 },
+    { month: "Jan", reach: 16200, clicks: 1100, conversions: 62, spend: 22000 },
+    { month: "Feb", reach: 21500, clicks: 1480, conversions: 84, spend: 28000 },
+    {
+      month: "Mar",
+      reach:       totalReach       || 25000,
+      clicks:      totalClicks      || 1800,
+      conversions: totalConversions || 95,
+      spend:       totalSpent       || 32000,
+    },
   ];
 
   const campaignTypeData = campaigns.reduce((acc: any[], c: any) => {
-    const ex = acc.find(a => a.name === c.type);
+    const ex = acc.find((a) => a.name === c.type);
     if (ex) { ex.value++; ex.conversions += c.conversions || 0; }
     else acc.push({ name: c.type, value: 1, conversions: c.conversions || 0 });
     return acc;
   }, []);
 
   const funnelData = [
-    { stage: "Traffic / Reach", value: totalReach, fill: "#3b82f6" },
-    { stage: "Clicks",          value: totalClicks, fill: "#8b5cf6" },
+    { stage: "Traffic / Reach", value: totalReach,      fill: "#3b82f6" },
+    { stage: "Clicks",          value: totalClicks,      fill: "#8b5cf6" },
     { stage: "Leads / Conv.",   value: totalConversions, fill: "#10b981" },
   ];
 
-  const formatNum = (n: number) => n >= 1000000 ? `${(n / 1000000).toFixed(1)}M` : n >= 1000 ? `${(n / 1000).toFixed(1)}K` : n.toString();
-  const formatCurrency = (n: number) => n >= 100000 ? `₹${(n / 100000).toFixed(1)}L` : n >= 1000 ? `₹${(n / 1000).toFixed(1)}K` : `₹${n}`;
+  const formatNum = (n: number) =>
+    n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M`
+    : n >= 1_000   ? `${(n / 1_000).toFixed(1)}K`
+    : n.toString();
+
+  const formatCurrency = (n: number) =>
+    n >= 100_000 ? `₹${(n / 100_000).toFixed(1)}L`
+    : n >= 1_000 ? `₹${(n / 1_000).toFixed(1)}K`
+    : `₹${n}`;
 
   return (
     <DashboardWrapper>
@@ -120,9 +166,13 @@ export default function Home() {
               {greeting}, {currentUser?.username || "there"} 👋
             </h1>
             <p className="text-gray-400 text-sm mt-0.5">
-              {today.toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+              {today.toLocaleDateString("en-US", {
+                weekday: "long", year: "numeric", month: "long", day: "numeric",
+              })}
               &nbsp;·&nbsp;
-              <span className="text-blue-500 font-medium">{activeCampaigns} active campaign{activeCampaigns !== 1 ? "s" : ""}</span>
+              <span className="text-blue-500 font-medium">
+                {activeCampaigns} active campaign{activeCampaigns !== 1 ? "s" : ""}
+              </span>
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -130,7 +180,8 @@ export default function Home() {
               onClick={() => setLastUpdated(new Date())}
               className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100"
             >
-              <RefreshCw size={12} /> Last updated {lastUpdated.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
+              <RefreshCw size={12} />
+              Last updated {lastUpdated.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}
             </button>
             <Link href="/campaigns">
               <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 transition shadow-sm">
@@ -145,7 +196,8 @@ export default function Home() {
           <div className="flex items-center gap-3 bg-red-50 border border-red-200 rounded-xl px-4 py-3">
             <AlertCircle size={16} className="text-red-500 shrink-0" />
             <p className="text-sm text-red-700">
-              <strong>{overdueProjects} project{overdueProjects > 1 ? "s are" : " is"} overdue.</strong> Please review deadlines.
+              <strong>{overdueProjects} project{overdueProjects > 1 ? "s are" : " is"} overdue.</strong>{" "}
+              Please review deadlines.
             </p>
             <Link href="/timeline" className="ml-auto text-xs font-semibold text-red-600 hover:underline whitespace-nowrap">
               View Timeline →
@@ -153,98 +205,34 @@ export default function Home() {
           </div>
         )}
 
-        {/* ══════════════════════════════════════════════════════
-            SECTION 1 — PRIMARY KPIs
-        ══════════════════════════════════════════════════════ */}
+        {/* ══ SECTION 1 — PRIMARY KPIs ══════════════════════════ */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1 h-5 bg-blue-600 rounded-full" />
             <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Key Performance Indicators</h2>
           </div>
           <div className="grid grid-cols-3 gap-4">
-            <KPICard
-              title="Total Website Traffic"
-              value={formatNum(totalReach)}
-              sub={`${formatNum(totalClicks)} clicks · ${ctr.toFixed(2)}% CTR`}
-              icon={Globe}
-              color="bg-blue-500"
-              trend="up"
-              trendValue="+18% vs last month"
-            />
-            <KPICard
-              title="Total Leads / Conversions"
-              value={totalConversions.toLocaleString()}
-              sub={`From ${activeCampaigns} active campaigns`}
-              icon={Target}
-              color="bg-green-500"
-              trend="up"
-              trendValue="+24% vs last month"
-            />
-            <KPICard
-              title="Conversion Rate"
-              value={conversionRate.toFixed(2)}
-              suffix="%"
-              sub="Clicks → Leads"
-              icon={Activity}
-              color="bg-purple-500"
-              trend={conversionRate > 3 ? "up" : "down"}
-              trendValue={conversionRate > 3 ? "Above avg" : "Below avg"}
-            />
+            <KPICard title="Total Website Traffic"     value={formatNum(totalReach)}            sub={`${formatNum(totalClicks)} clicks · ${ctr.toFixed(2)}% CTR`} icon={Globe}        color="bg-blue-500"   trend="up"                              trendValue="+18% vs last month" />
+            <KPICard title="Total Leads / Conversions" value={totalConversions.toLocaleString()} sub={`From ${activeCampaigns} active campaigns`}                  icon={Target}       color="bg-green-500"  trend="up"                              trendValue="+24% vs last month" />
+            <KPICard title="Conversion Rate"           value={conversionRate.toFixed(2)}         suffix="%" sub="Clicks → Leads"                                    icon={Activity}     color="bg-purple-500" trend={conversionRate > 3 ? "up" : "down"} trendValue={conversionRate > 3 ? "Above avg" : "Below avg"} />
           </div>
         </div>
 
-        {/* ══════════════════════════════════════════════════════
-            SECTION 2 — FINANCIAL KPIs
-        ══════════════════════════════════════════════════════ */}
+        {/* ══ SECTION 2 — FINANCIAL KPIs ════════════════════════ */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1 h-5 bg-green-600 rounded-full" />
             <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Financial Metrics</h2>
           </div>
           <div className="grid grid-cols-4 gap-4">
-            <KPICard
-              title="Total Budget"
-              value={formatCurrency(totalBudget)}
-              sub={`${formatCurrency(budgetLeft)} remaining`}
-              icon={DollarSign}
-              color="bg-teal-500"
-              trend="up"
-              trendValue="On track"
-            />
-            <KPICard
-              title="Total Spent"
-              value={formatCurrency(totalSpent)}
-              sub={`${totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0}% of budget used`}
-              icon={BarChart2}
-              color="bg-orange-500"
-              trend={totalSpent / totalBudget < 0.9 ? "up" : "down"}
-              trendValue={totalSpent / totalBudget < 0.9 ? "Within budget" : "Near limit"}
-            />
-            <KPICard
-              title="Cost Per Lead (CPL)"
-              value={cpl > 0 ? formatCurrency(Math.round(cpl)) : "—"}
-              sub="Spend ÷ Conversions"
-              icon={MousePointer}
-              color="bg-pink-500"
-              trend={cpl < 500 ? "up" : "down"}
-              trendValue={cpl < 500 ? "Efficient" : "High CPL"}
-            />
-            <KPICard
-              title="Return on Investment"
-              value={`${roi > 0 ? "+" : ""}${roi.toFixed(1)}`}
-              suffix="%"
-              sub="(Budget - Spent) / Spent"
-              icon={TrendingUp}
-              color="bg-indigo-500"
-              trend={roi > 0 ? "up" : "down"}
-              trendValue={roi > 0 ? "Profitable" : "Review needed"}
-            />
+            <KPICard title="Total Budget"          value={formatCurrency(totalBudget)} sub={`${formatCurrency(budgetLeft)} remaining`}                                                    icon={DollarSign}   color="bg-teal-500"   trend="up"                                         trendValue="On track" />
+            <KPICard title="Total Spent"           value={formatCurrency(totalSpent)}  sub={`${totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0}% of budget used`}     icon={BarChart2}    color="bg-orange-500" trend={totalSpent / totalBudget < 0.9 ? "up" : "down"} trendValue={totalSpent / totalBudget < 0.9 ? "Within budget" : "Near limit"} />
+            <KPICard title="Cost Per Lead (CPL)"   value={cpl > 0 ? formatCurrency(Math.round(cpl)) : "—"} sub="Spend ÷ Conversions"                                                    icon={MousePointer} color="bg-pink-500"   trend={cpl < 500 ? "up" : "down"}                    trendValue={cpl < 500 ? "Efficient" : "High CPL"} />
+            <KPICard title="Return on Investment"  value={`${roi > 0 ? "+" : ""}${roi.toFixed(1)}`} suffix="%" sub="(Budget - Spent) / Spent"                                           icon={TrendingUp}   color="bg-indigo-500" trend={roi > 0 ? "up" : "down"}                      trendValue={roi > 0 ? "Profitable" : "Review needed"} />
           </div>
         </div>
 
-        {/* ══════════════════════════════════════════════════════
-            SECTION 3 — CHARTS
-        ══════════════════════════════════════════════════════ */}
+        {/* ══ SECTION 3 — CHARTS ════════════════════════════════ */}
         <div className="grid grid-cols-3 gap-6">
           {/* Traffic & Conversions Trend */}
           <div className="col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
@@ -261,23 +249,21 @@ export default function Home() {
               <AreaChart data={monthlyData}>
                 <defs>
                   <linearGradient id="gReach" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
+                    <stop offset="5%"  stopColor="#3b82f6" stopOpacity={0.15} />
                     <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="gConv" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
+                    <stop offset="5%"  stopColor="#10b981" stopOpacity={0.15} />
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f8f8f8" />
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ borderRadius: "12px", border: "1px solid #f0f0f0", fontSize: "12px" }}
-                />
+                <Tooltip contentStyle={{ borderRadius: "12px", border: "1px solid #f0f0f0", fontSize: "12px" }} />
                 <Legend />
-                <Area type="monotone" dataKey="reach" stroke="#3b82f6" strokeWidth={2.5} fill="url(#gReach)" name="Reach" dot={{ r: 3 }} />
-                <Area type="monotone" dataKey="conversions" stroke="#10b981" strokeWidth={2.5} fill="url(#gConv)" name="Conversions" dot={{ r: 3 }} />
+                <Area type="monotone" dataKey="reach"       stroke="#3b82f6" strokeWidth={2.5} fill="url(#gReach)" name="Reach"       dot={{ r: 3 }} />
+                <Area type="monotone" dataKey="conversions" stroke="#10b981" strokeWidth={2.5} fill="url(#gConv)"  name="Conversions" dot={{ r: 3 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -296,10 +282,8 @@ export default function Home() {
                       <span className="font-bold" style={{ color: stage.fill }}>{formatNum(stage.value)}</span>
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-6 relative overflow-hidden">
-                      <div
-                        className="h-full rounded-full flex items-center justify-end pr-2 transition-all"
-                        style={{ width: `${Math.max(pct, 3)}%`, backgroundColor: stage.fill }}
-                      >
+                      <div className="h-full rounded-full flex items-center justify-end pr-2 transition-all"
+                        style={{ width: `${Math.max(pct, 3)}%`, backgroundColor: stage.fill }}>
                         <span className="text-white text-xs font-bold">{pct.toFixed(1)}%</span>
                       </div>
                     </div>
@@ -307,8 +291,6 @@ export default function Home() {
                 );
               })}
             </div>
-
-            {/* Quick stats below funnel */}
             <div className="mt-5 pt-4 border-t border-gray-100 grid grid-cols-2 gap-3">
               <div className="bg-blue-50 rounded-xl p-3 text-center">
                 <p className="text-lg font-bold text-blue-600">{ctr.toFixed(1)}%</p>
@@ -322,11 +304,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ══════════════════════════════════════════════════════
-            SECTION 4 — SPEND vs RESULTS
-        ══════════════════════════════════════════════════════ */}
+        {/* ══ SECTION 4 — SPEND vs RESULTS ══════════════════════ */}
         <div className="grid grid-cols-3 gap-6">
-          {/* Monthly Spend Chart */}
+          {/* Monthly Spend */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h3 className="font-bold text-gray-800 mb-1">Monthly Ad Spend</h3>
             <p className="text-xs text-gray-400 mb-4">Budget utilization over time</p>
@@ -376,16 +356,25 @@ export default function Home() {
             <h3 className="font-bold text-gray-800 mb-4">Quick Summary</h3>
             <div className="space-y-3">
               {[
-                { label: "Active Projects", value: projects.filter((p: any) => !p.endDate || new Date(p.endDate) >= today).length, icon: FolderOpen, color: "text-blue-500 bg-blue-50" },
-                { label: "Team Members", value: users.length, icon: Users, color: "text-purple-500 bg-purple-50" },
-                { label: "Campaigns Running", value: activeCampaigns, icon: Zap, color: "text-green-500 bg-green-50" },
-                { label: "Overdue Projects", value: overdueProjects, icon: AlertCircle, color: overdueProjects > 0 ? "text-red-500 bg-red-50" : "text-gray-400 bg-gray-50" },
-                { label: "Avg Attendance", value: attendance.length > 0 ? `${Math.round(attendance.reduce((s: number, a: any) => s + ((a.present + a.late + a.wfh) / new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate()) * 100, 0) / attendance.length)}%` : "—", icon: Award, color: "text-teal-500 bg-teal-50" },
-              ].map(item => (
+                { label: "Active Projects",   value: projects.filter((p: any) => !p.endDate || new Date(p.endDate) >= today).length, icon: FolderOpen, iconColor: "#3b82f6", bg: "#eff6ff" },
+                { label: "Team Members",      value: users.length,       icon: Users,       iconColor: "#a855f7", bg: "#faf5ff" },
+                { label: "Campaigns Running", value: activeCampaigns,    icon: Zap,         iconColor: "#22c55e", bg: "#f0fdf4" },
+                { label: "Overdue Projects",  value: overdueProjects,    icon: AlertCircle, iconColor: overdueProjects > 0 ? "#ef4444" : "#9ca3af", bg: overdueProjects > 0 ? "#fef2f2" : "#f9fafb" },
+                {
+                  label: "Avg Attendance",
+                  value: attendance.length > 0
+                    ? `${Math.round(attendance.reduce((s: number, a: any) => {
+                        const days = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+                        return s + ((a.present + a.late + a.wfh) / days) * 100;
+                      }, 0) / attendance.length)}%`
+                    : "—",
+                  icon: Award, iconColor: "#14b8a6", bg: "#f0fdfa",
+                },
+              ].map((item) => (
                 <div key={item.label} className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${item.color}`}>
-                      <item.icon size={14} />
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ backgroundColor: item.bg }}>
+                      <item.icon size={14} style={{ color: item.iconColor }} />
                     </div>
                     <span className="text-sm text-gray-600">{item.label}</span>
                   </div>
@@ -396,17 +385,13 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ══════════════════════════════════════════════════════
-            SECTION 5 — BOTTOM ROW
-        ══════════════════════════════════════════════════════ */}
+        {/* ══ SECTION 5 — BOTTOM ROW ════════════════════════════ */}
         <div className="grid grid-cols-2 gap-6">
           {/* Top Campaigns */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="flex justify-between items-center px-5 py-4 border-b border-gray-100">
               <h3 className="font-bold text-gray-800">Top Campaigns</h3>
-              <Link href="/campaigns" className="text-xs text-blue-500 font-medium hover:text-blue-700 flex items-center gap-1">
-                View all <ChevronRight size={12} />
-              </Link>
+              <Link href="/campaigns" className="text-xs text-blue-500 font-medium hover:text-blue-700 flex items-center gap-1">View all <ChevronRight size={12} /></Link>
             </div>
             <div className="divide-y divide-gray-50">
               {campaigns.length === 0 ? (
@@ -419,9 +404,7 @@ export default function Home() {
                     const cplVal = c.conversions > 0 ? Math.round((c.spent || 0) / c.conversions) : null;
                     return (
                       <div key={c.id} className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50">
-                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ backgroundColor: COLORS[idx] }}>
-                          {idx + 1}
-                        </div>
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ backgroundColor: COLORS[idx] }}>{idx + 1}</div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-800 truncate">{c.name}</p>
                           <p className="text-xs text-gray-400">{c.type} · {c.status}</p>
@@ -437,13 +420,11 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Recent Projects */}
+          {/* Active Projects */}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div className="flex justify-between items-center px-5 py-4 border-b border-gray-100">
               <h3 className="font-bold text-gray-800">Active Projects</h3>
-              <Link href="/" className="text-xs text-blue-500 font-medium hover:text-blue-700 flex items-center gap-1">
-                View all <ChevronRight size={12} />
-              </Link>
+              <Link href="/" className="text-xs text-blue-500 font-medium hover:text-blue-700 flex items-center gap-1">View all <ChevronRight size={12} /></Link>
             </div>
             <div className="divide-y divide-gray-50">
               {projects.length === 0 ? (
@@ -451,7 +432,7 @@ export default function Home() {
               ) : (
                 projects.slice(0, 4).map((p: any, idx: number) => {
                   const isOverdue = p.endDate && new Date(p.endDate) < today;
-                  const daysLeft = p.endDate ? Math.ceil((new Date(p.endDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
+                  const daysLeft  = p.endDate ? Math.ceil((new Date(p.endDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null;
                   return (
                     <Link href={`/projects/${p.id}`} key={p.id}>
                       <div className="flex items-center gap-4 px-5 py-3 hover:bg-gray-50 cursor-pointer">

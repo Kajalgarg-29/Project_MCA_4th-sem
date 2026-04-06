@@ -151,6 +151,16 @@ export const api = createApi({
       query: (id) => ({ url: `/tasks/${id}`, method: "DELETE" }),
       invalidatesTags: ["Tasks"],
     }),
+    updateAttendance: build.mutation<
+      Attendance,
+      { id: number } & Partial<Attendance>>({
+      query: ({ id, ...body }) => ({
+        url: `/attendance/${id}`,
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["Attendance"],
+    }),
     // Users
     getUsers: build.query<User[], void>({
       query: () => "/users",
@@ -347,6 +357,7 @@ export const {
   useRemoveUserFromTeamMutation,
   useGetAttendanceQuery,
   useGetTodayAttendanceQuery,
+  useUpdateAttendanceMutation,
   useGetAttendanceSummaryQuery,
   useCheckInMutation,
   useCheckOutMutation,
