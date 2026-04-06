@@ -7,7 +7,7 @@ import {
   useGetUsersQuery,
   useGetAttendanceSummaryQuery,
 } from "@/state/api";
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -34,8 +34,6 @@ import {
   Briefcase,
   CheckSquare,
   Clock,
-  ArrowUpRight,
-  ArrowDownRight,
   BarChart2,
   AlertTriangle,
 } from "lucide-react";
@@ -61,7 +59,6 @@ const STATUS_COLORS: Record<string, string> = {
   Done: C.green,
 };
 
-// ─── seed monthly data (visual baseline; replace with real API if available) ──
 const SEED_MONTHLY = [
   { month: "Jan", created: 12, completed: 8, overdue: 2 },
   { month: "Feb", created: 18, completed: 14, overdue: 3 },
@@ -92,6 +89,7 @@ function exportCSV(filename: string, rows: Record<string, any>[]) {
   URL.revokeObjectURL(url);
 }
 
+// ─── sub-components ───────────────────────────────────────────────────────────
 const CustomTooltip = ({ active, payload, label }: any) =>
   active && payload?.length ? (
     <div className="bg-white border border-gray-100 rounded-xl shadow-lg p-3 text-xs min-w-[120px]">
@@ -193,48 +191,23 @@ function Spinner() {
 export default function AnalyticsPage() {
   const now = new Date();
   const [selectedProjectId, setSelectedProjectId] = useState<number | "all">("all");
-  // const [refreshing, setRefreshing] = useState(false);
 
   // ── queries ────────────────────────────────────────────────────────────────
-  const {
-    data: projects = [],
-    isLoading: projLoading,
-    refetch: refetchProjects,
-  } = useGetProjectsQuery();
-
-  const { data: users = [], refetch: refetchUsers } = useGetUsersQuery();
+  const { data: projects = [], isLoading: projLoading } = useGetProjectsQuery();
+  const { data: users = [] } = useGetUsersQuery();
 
   const targetProjectId =
-    selectedProjectId === "all"
-      ? projects[0]?.id ?? 0
-      : selectedProjectId;
+    selectedProjectId === "all" ? projects[0]?.id ?? 0 : selectedProjectId;
 
-  const {
-    data: tasks = [],
-    isLoading: taskLoading,
-    refetch: refetchTasks,
-  } = useGetTasksQuery(
+  const { data: tasks = [], isLoading: taskLoading } = useGetTasksQuery(
     { projectId: targetProjectId },
     { skip: projects.length === 0 }
   );
 
-  const { data: attendanceSummary = [], refetch: refetchAttendance } =
-    useGetAttendanceSummaryQuery({
-      month: now.getMonth() + 1,
-      year: now.getFullYear(),
-    });
-
-  // ── refresh all data ───────────────────────────────────────────────────────
-  // const handleRefresh = useCallback(async () => {
-  //   setRefreshing(true);
-  //   await Promise.allSettled([
-  //     refetchProjects(),
-  //     refetchUsers(),
-  //     refetchTasks(),
-  //     refetchAttendance(),
-  //   ]);
-  //   setRefreshing(false);
-  // }, [refetchProjects, refetchUsers, refetchTasks, refetchAttendance]);
+  const { data: attendanceSummary = [] } = useGetAttendanceSummaryQuery({
+    month: now.getMonth() + 1,
+    year: now.getFullYear(),
+  });
 
   // ── derived metrics ────────────────────────────────────────────────────────
   const tasksByStatus = useMemo(() => {
@@ -256,8 +229,7 @@ export default function AnalyticsPage() {
   }, [tasks]);
 
   const completedCount = useMemo(
-    () =>
-      tasks.filter((t) => t.status === "Completed" || t.status === "Done").length,
+    () => tasks.filter((t) => t.status === "Completed" || t.status === "Done").length,
     [tasks]
   );
 
@@ -279,9 +251,7 @@ export default function AnalyticsPage() {
 
   const attendancePct = useMemo(() => {
     if (!attendanceSummary.length) return null;
-    const present = attendanceSummary.filter(
-      (a: any) => a.status === "present"
-    ).length;
+    const present = attendanceSummary.filter((a: any) => a.status === "present").length;
     return Math.round((present / attendanceSummary.length) * 100);
   }, [attendanceSummary]);
 
@@ -302,21 +272,7 @@ export default function AnalyticsPage() {
     (p) => !p.endDate || new Date(p.endDate) >= now
   ).length;
 
-  // ── export handlers ────────────────────────────────────────────────────────
-  const handleExportTasks = () =>
-    exportCSV(
-      `tasks-project-${targetProjectId}.csv`,
-      tasks.map((t) => ({
-        ID: t.id,
-        Title: t.title,
-        Status: t.status ?? "",
-        Priority: t.priority ?? "",
-        "Start Date": t.startDate ?? "",
-        "Due Date": t.dueDate ?? "",
-        "Project ID": t.projectId,
-      }))
-    );
-
+  // ── export projects CSV ────────────────────────────────────────────────────
   const handleExportProjects = () =>
     exportCSV(
       "projects.csv",
@@ -326,8 +282,7 @@ export default function AnalyticsPage() {
         Description: p.description ?? "",
         "Start Date": p.startDate ?? "",
         "End Date": p.endDate ?? "",
-        Status:
-          p.endDate && new Date(p.endDate) < now ? "Completed" : "Active",
+        Status: p.endDate && new Date(p.endDate) < now ? "Completed" : "Active",
       }))
     );
 
@@ -369,36 +324,24 @@ export default function AnalyticsPage() {
               ))}
             </select>
 
-            {/* Refresh — calls real RTK Query refetch on all queries */}
-            {/* <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 shadow-sm hover:bg-gray-50 disabled:opacity-50 transition-colors"
-            >
-              {refreshing ? <Spinner /> : <Spinner />}
-              {refreshing ? "Refreshing…" : "Refresh"}
-            </button> */}
-
-            {/* Export tasks as CSV */}
-            <button
-              onClick={handleExportTasks}
-              disabled={tasks.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl shadow-sm hover:bg-blue-700 disabled:opacity-40 transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Export Tasks
-            </button>
-
             {/* Export projects as CSV */}
             <button
               onClick={handleExportProjects}
               disabled={projects.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-semibold rounded-xl shadow-sm hover:bg-gray-50 disabled:opacity-40 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl shadow-sm hover:bg-blue-700 disabled:opacity-40 transition-colors"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
               </svg>
               Export Projects
             </button>
