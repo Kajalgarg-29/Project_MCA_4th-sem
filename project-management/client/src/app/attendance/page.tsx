@@ -705,13 +705,7 @@ export default function AttendancePage() {
               color: "text-red-600 bg-red-50",
               sub: "days",
             },
-            {
-              label: "Hours Worked",
-              value: `${totalHours}h`,
-              icon: Clock,
-              color: "text-blue-600 bg-blue-50",
-              sub: "this month",
-            },
+      
           ].map((s) => (
             <div
               key={s.label}
