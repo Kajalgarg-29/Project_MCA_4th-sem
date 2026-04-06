@@ -3,13 +3,13 @@
 import { useState, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useGetTasksQuery, useCreateTaskMutation, useUpdateTaskStatusMutation, useDeleteTaskMutation } from "@/state/api";
-import { Plus, X, Trash2, Pencil, GripVertical, Calendar, Tag } from "lucide-react";
+import { Plus, X, Trash2, Pencil, GripVertical, Calendar, Tag, FolderOpen } from "lucide-react";
 
 const statusColumns = [
-  { id: "To Do", label: "To Do", color: "bg-gray-100 text-gray-600", dot: "bg-gray-400", border: "border-gray-200" },
-  { id: "In Progress", label: "In Progress", color: "bg-blue-100 text-blue-600", dot: "bg-blue-500", border: "border-blue-200" },
-  { id: "Review", label: "Review", color: "bg-yellow-100 text-yellow-600", dot: "bg-yellow-500", border: "border-yellow-200" },
-  { id: "Done", label: "Done", color: "bg-green-100 text-green-600", dot: "bg-green-500", border: "border-green-200" },
+  { id: "To Do", label: "To Do", color: "bg-gray-100 text-gray-600", dot: "bg-gray-400" },
+  { id: "In Progress", label: "In Progress", color: "bg-blue-100 text-blue-600", dot: "bg-blue-500" },
+  { id: "Review", label: "Review", color: "bg-yellow-100 text-yellow-600", dot: "bg-yellow-500" },
+  { id: "Done", label: "Done", color: "bg-green-100 text-green-600", dot: "bg-green-500" },
 ];
 
 const priorityColors: Record<string, string> = {
@@ -40,7 +40,7 @@ const emptyForm: TaskForm = {
   status: "To Do", tags: "", dueDate: "",
 };
 
-export default function KanbanBoard({ projectId }: { projectId: number }) {
+export default function KanbanBoard({ projectId, projectName }: { projectId: number; projectName?: string }) {
   const { data: tasks = [] } = useGetTasksQuery({ projectId });
   const [createTask] = useCreateTaskMutation();
   const [updateTaskStatus] = useUpdateTaskStatusMutation();
@@ -49,7 +49,6 @@ export default function KanbanBoard({ projectId }: { projectId: number }) {
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
   const [form, setForm] = useState<TaskForm>(emptyForm);
-  const [addingToColumn, setAddingToColumn] = useState<string | null>(null);
 
   const handleChange = useCallback((field: keyof TaskForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -58,7 +57,6 @@ export default function KanbanBoard({ projectId }: { projectId: number }) {
   const openCreate = (status?: string) => {
     setForm({ ...emptyForm, status: status || "To Do" });
     setEditingTask(null);
-    setAddingToColumn(status || null);
     setShowModal(true);
   };
 
@@ -78,10 +76,7 @@ export default function KanbanBoard({ projectId }: { projectId: number }) {
   const handleSubmit = async () => {
     if (!form.title.trim()) return alert("Title is required");
     if (editingTask) {
-      // Update task status to new status (drag handles status, edit handles all fields)
       await updateTaskStatus({ taskId: editingTask.id, status: form.status });
-      // For full edit we'd need an updateTask endpoint - using status update for now
-      // and recreating if other fields changed
     } else {
       await createTask({
         title: form.title,
@@ -116,15 +111,23 @@ export default function KanbanBoard({ projectId }: { projectId: number }) {
 
   const isOverdue = (dueDate: string) => dueDate && new Date(dueDate) < new Date();
 
+  const doneCount = getTasksByStatus("Done").length;
+  const totalCount = tasks.length;
+  const progress = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+
   return (
     <div className="p-5 h-full">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-5">
+      {/* Header with Project Name */}
+      <div className="flex justify-between items-start mb-5">
         <div>
-          <h1 className="text-xl font-bold text-gray-800">Project Board</h1>
-          <p className="text-xs text-gray-400 mt-0.5">
-            {tasks.length} tasks · Drag cards to update status
-          </p>
+          {/* Project Name Badge */}
+          <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xl font-semibold">
+              <FolderOpen size={15} />
+              {projectName || "Project Board"}
+            </div>
+          </div>
+        
         </div>
         <button
           onClick={() => openCreate()}
@@ -133,15 +136,13 @@ export default function KanbanBoard({ projectId }: { projectId: number }) {
           <Plus size={16} /> Add Task
         </button>
       </div>
-
-      {/* Columns */}
+          {/* Columns */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-4 gap-4 h-full">
+        <div className="grid grid-cols-4 gap-4">
           {statusColumns.map(col => {
             const colTasks = getTasksByStatus(col.id);
             return (
               <div key={col.id} className={`rounded-2xl border-2 ${columnBg[col.id]} flex flex-col`} style={{ minHeight: "500px" }}>
-                {/* Column Header */}
                 <div className="p-3 pb-2 shrink-0">
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
@@ -157,7 +158,6 @@ export default function KanbanBoard({ projectId }: { projectId: number }) {
                       <button
                         onClick={() => openCreate(col.id)}
                         className="w-5 h-5 flex items-center justify-center rounded-full hover:bg-white text-gray-400 hover:text-blue-500 transition"
-                        title={`Add task to ${col.label}`}
                       >
                         <Plus size={13} />
                       </button>
@@ -165,7 +165,6 @@ export default function KanbanBoard({ projectId }: { projectId: number }) {
                   </div>
                 </div>
 
-                {/* Droppable Area */}
                 <Droppable droppableId={col.id}>
                   {(provided, snapshot) => (
                     <div
@@ -182,40 +181,28 @@ export default function KanbanBoard({ projectId }: { projectId: number }) {
                               className={`bg-white rounded-xl p-3 shadow-sm border border-gray-100 group
                                 ${snapshot.isDragging ? "shadow-lg rotate-1 border-blue-200" : "hover:shadow-md"} transition-all`}
                             >
-                              {/* Drag Handle + Actions */}
                               <div className="flex items-start justify-between gap-2 mb-2">
                                 <div
                                   {...provided.dragHandleProps}
                                   className="mt-0.5 text-gray-200 hover:text-gray-400 cursor-grab active:cursor-grabbing shrink-0"
-                                  title="Drag to move"
                                 >
                                   <GripVertical size={14} />
                                 </div>
                                 <p className="text-sm font-semibold text-gray-800 flex-1 leading-tight">{task.title}</p>
                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
-                                  <button
-                                    onClick={() => openEdit(task)}
-                                    className="p-1 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-500 transition"
-                                    title="Edit task"
-                                  >
+                                  <button onClick={() => openEdit(task)} className="p-1 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-500 transition">
                                     <Pencil size={13} />
                                   </button>
-                                  <button
-                                    onClick={() => handleDelete(task.id)}
-                                    className="p-1 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition"
-                                    title="Delete task"
-                                  >
+                                  <button onClick={() => handleDelete(task.id)} className="p-1 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition">
                                     <Trash2 size={13} />
                                   </button>
                                 </div>
                               </div>
 
-                              {/* Description */}
                               {task.description && (
                                 <p className="text-xs text-gray-400 mb-2 line-clamp-2 ml-4">{task.description}</p>
                               )}
 
-                              {/* Footer */}
                               <div className="flex flex-wrap gap-1.5 items-center ml-4">
                                 {task.priority && (
                                   <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium border ${priorityColors[task.priority] || "bg-gray-100 text-gray-600"}`}>
@@ -245,7 +232,6 @@ export default function KanbanBoard({ projectId }: { projectId: number }) {
                       ))}
                       {provided.placeholder}
 
-                      {/* Empty state */}
                       {colTasks.length === 0 && !snapshot.isDraggingOver && (
                         <button
                           onClick={() => openCreate(col.id)}
@@ -264,14 +250,14 @@ export default function KanbanBoard({ projectId }: { projectId: number }) {
         </div>
       </DragDropContext>
 
-      {/* Create/Edit Modal */}
+      {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
             <div className="flex justify-between items-center p-5 border-b border-gray-100">
               <div>
                 <h2 className="text-lg font-bold text-gray-800">{editingTask ? "Edit Task" : "Create New Task"}</h2>
-                <p className="text-xs text-gray-400 mt-0.5">{editingTask ? "Update task details" : "Add a task to the board"}</p>
+                {projectName && <p className="text-xs text-blue-500 mt-0.5 flex items-center gap-1"><FolderOpen size={11} />{projectName}</p>}
               </div>
               <button onClick={() => { setShowModal(false); setEditingTask(null); }}>
                 <X size={20} className="text-gray-400" />
@@ -281,84 +267,52 @@ export default function KanbanBoard({ projectId }: { projectId: number }) {
             <div className="p-5 space-y-4">
               <div>
                 <label className="text-xs font-semibold text-gray-500 block mb-1.5">Task Title *</label>
-                <input
-                  type="text"
-                  placeholder="What needs to be done?"
-                  value={form.title}
+                <input type="text" placeholder="What needs to be done?" value={form.title}
                   onChange={e => handleChange("title", e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50"
-                  autoFocus
-                />
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50" autoFocus />
               </div>
-
               <div>
                 <label className="text-xs font-semibold text-gray-500 block mb-1.5">Description</label>
-                <textarea
-                  placeholder="Add more details..."
-                  value={form.description}
+                <textarea placeholder="Add more details..." value={form.description}
                   onChange={e => handleChange("description", e.target.value)}
-                  rows={2}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 resize-none"
-                />
+                  rows={2} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 resize-none" />
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-gray-500 block mb-1.5">Status</label>
-                  <select
-                    value={form.status}
-                    onChange={e => handleChange("status", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                  >
+                  <select value={form.status} onChange={e => handleChange("status", e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400">
                     {statusColumns.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-500 block mb-1.5">Priority</label>
-                  <select
-                    value={form.priority}
-                    onChange={e => handleChange("priority", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                  >
+                  <select value={form.priority} onChange={e => handleChange("priority", e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400">
                     {["Urgent", "High", "Medium", "Low"].map(p => <option key={p}>{p}</option>)}
                   </select>
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-gray-500 block mb-1.5">Due Date</label>
-                  <input
-                    type="date"
-                    value={form.dueDate}
-                    onChange={e => handleChange("dueDate", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                  />
+                  <input type="date" value={form.dueDate} onChange={e => handleChange("dueDate", e.target.value)}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-500 block mb-1.5">Tags</label>
-                  <input
-                    type="text"
-                    placeholder="design, dev, ..."
-                    value={form.tags}
+                  <input type="text" placeholder="design, dev, ..." value={form.tags}
                     onChange={e => handleChange("tags", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400"
-                  />
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
                 </div>
               </div>
             </div>
 
             <div className="flex gap-3 p-5 border-t border-gray-100">
-              <button
-                onClick={() => { setShowModal(false); setEditingTask(null); }}
-                className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSubmit}
-                className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm hover:bg-blue-700 font-medium"
-              >
+              <button onClick={() => { setShowModal(false); setEditingTask(null); }}
+                className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm hover:bg-gray-50">Cancel</button>
+              <button onClick={handleSubmit}
+                className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl text-sm hover:bg-blue-700 font-medium">
                 {editingTask ? "Save Changes" : "Create Task"}
               </button>
             </div>

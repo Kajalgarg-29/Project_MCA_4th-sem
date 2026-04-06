@@ -272,8 +272,7 @@ export default function AnalyticsPage() {
     (p) => !p.endDate || new Date(p.endDate) >= now
   ).length;
 
-  // ── export projects CSV ────────────────────────────────────────────────────
-  const handleExportProjects = () =>
+const handleExportProjects = () =>
     exportCSV(
       "projects.csv",
       projects.map((p) => ({
@@ -291,7 +290,6 @@ export default function AnalyticsPage() {
   return (
     <DashboardWrapper>
       <div className="min-h-screen p-6 bg-slate-50">
-        {/* ── Header ─────────────────────────────────────────────────────── */}
         <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-1">
@@ -324,7 +322,6 @@ export default function AnalyticsPage() {
               ))}
             </select>
 
-            {/* Export projects as CSV */}
             <button
               onClick={handleExportProjects}
               disabled={projects.length === 0}
@@ -348,7 +345,6 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* loading indicator */}
         {isLoading && (
           <div className="flex items-center gap-2 text-sm text-blue-500 mb-4">
             <Spinner />
@@ -356,7 +352,6 @@ export default function AnalyticsPage() {
           </div>
         )}
 
-        {/* ── KPI cards ───────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <StatCard
             label="Total Projects"
@@ -392,7 +387,6 @@ export default function AnalyticsPage() {
           />
         </div>
 
-        {/* ── Completion banner ────────────────────────────────────────────── */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-5 mb-6 flex flex-wrap items-center justify-between gap-4 text-white shadow-md">
           <div>
             <p className="text-sm font-medium opacity-80 mb-1">Completion Rate</p>
@@ -419,7 +413,6 @@ export default function AnalyticsPage() {
           </div>
         </div>
 
-        {/* ── Row 1: Area + Donut ──────────────────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <SectionCard title="Monthly Task Activity" className="md:col-span-2">
             <ResponsiveContainer width="100%" height={230}>
