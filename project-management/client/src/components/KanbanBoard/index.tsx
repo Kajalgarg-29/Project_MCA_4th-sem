@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { useGetTasksQuery, useCreateTaskMutation, useUpdateTaskStatusMutation, useDeleteTaskMutation } from "@/state/api";
-import { Plus, X, Trash2, Pencil, GripVertical, Calendar, Tag, FolderOpen } from "lucide-react";
+import { Plus, X, Trash2, Pencil, GripVertical, Calendar, Tag, FolderOpen, ChevronDown, ChevronUp } from "lucide-react";
 
 const statusColumns = [
   { id: "To Do", label: "To Do", color: "bg-gray-100 text-gray-600", dot: "bg-gray-400" },
@@ -49,6 +49,8 @@ export default function KanbanBoard({ projectId, projectName }: { projectId: num
   const [showModal, setShowModal] = useState(false);
   const [editingTask, setEditingTask] = useState<any>(null);
   const [form, setForm] = useState<TaskForm>(emptyForm);
+  // Track which columns are collapsed on mobile
+  const [collapsedCols, setCollapsedCols] = useState<Record<string, boolean>>({});
 
   const handleChange = useCallback((field: keyof TaskForm, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -111,40 +113,47 @@ export default function KanbanBoard({ projectId, projectName }: { projectId: num
 
   const isOverdue = (dueDate: string) => dueDate && new Date(dueDate) < new Date();
 
-  const doneCount = getTasksByStatus("Done").length;
-  const totalCount = tasks.length;
-  const progress = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+  const toggleCol = (colId: string) =>
+    setCollapsedCols(prev => ({ ...prev, [colId]: !prev[colId] }));
 
   return (
-    <div className="p-5 h-full">
-      {/* Header with Project Name */}
-      <div className="flex justify-between items-start mb-5">
-        <div>
-          {/* Project Name Badge */}
-          <div className="flex items-center gap-2 mb-1">
-            <div className="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xl font-semibold">
-              <FolderOpen size={15} />
-              {projectName || "Project Board"}
-            </div>
-          </div>
-        
+    <div className="p-3 sm:p-5 h-full">
+      {/* Header */}
+      <div className="flex justify-between items-start mb-4 sm:mb-5 gap-2">
+        <div className="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-sm sm:text-xl font-semibold truncate max-w-[60vw]">
+          <FolderOpen size={15} className="shrink-0" />
+          <span className="truncate">{projectName || "Project Board"}</span>
         </div>
         <button
           onClick={() => openCreate()}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700 transition text-sm font-medium shadow-sm"
+          className="flex items-center gap-1.5 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-xl hover:bg-blue-700 transition text-sm font-medium shadow-sm shrink-0"
         >
-          <Plus size={16} /> Add Task
+          <Plus size={16} />
+          <span className="hidden sm:inline">Add Task</span>
+          <span className="sm:hidden">Add</span>
         </button>
       </div>
-          {/* Columns */}
+
+      {/* Board */}
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="grid grid-cols-4 gap-4">
+        {/*
+          Mobile: vertical stack of collapsible column accordions
+          Desktop (lg+): 4-column grid
+        */}
+        <div className="flex flex-col gap-3 lg:grid lg:grid-cols-4 lg:gap-4">
           {statusColumns.map(col => {
             const colTasks = getTasksByStatus(col.id);
+            const isCollapsed = collapsedCols[col.id] ?? false;
+
             return (
-              <div key={col.id} className={`rounded-2xl border-2 ${columnBg[col.id]} flex flex-col`} style={{ minHeight: "500px" }}>
+              <div
+                key={col.id}
+                className={`rounded-2xl border-2 ${columnBg[col.id]} flex flex-col`}
+                style={{ minHeight: isCollapsed ? undefined : "120px" }}
+              >
+                {/* Column header */}
                 <div className="p-3 pb-2 shrink-0">
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className={`w-2.5 h-2.5 rounded-full ${col.dot}`} />
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${col.color}`}>
@@ -161,89 +170,100 @@ export default function KanbanBoard({ projectId, projectName }: { projectId: num
                       >
                         <Plus size={13} />
                       </button>
+                      {/* Collapse toggle — mobile only */}
+                      <button
+                        onClick={() => toggleCol(col.id)}
+                        className="lg:hidden w-5 h-5 flex items-center justify-center rounded-full hover:bg-white text-gray-400 transition"
+                      >
+                        {isCollapsed ? <ChevronDown size={13} /> : <ChevronUp size={13} />}
+                      </button>
                     </div>
                   </div>
                 </div>
 
-                <Droppable droppableId={col.id}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className={`flex-1 px-3 pb-3 space-y-2 transition-colors ${snapshot.isDraggingOver ? "bg-white/50 rounded-xl" : ""}`}
-                    >
-                      {colTasks.map((task: any, index: number) => (
-                        <Draggable key={task.id} draggableId={String(task.id)} index={index}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              className={`bg-white rounded-xl p-3 shadow-sm border border-gray-100 group
-                                ${snapshot.isDragging ? "shadow-lg rotate-1 border-blue-200" : "hover:shadow-md"} transition-all`}
-                            >
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <div
-                                  {...provided.dragHandleProps}
-                                  className="mt-0.5 text-gray-200 hover:text-gray-400 cursor-grab active:cursor-grabbing shrink-0"
-                                >
-                                  <GripVertical size={14} />
+                {/* Droppable area — hidden when collapsed on mobile */}
+                {!isCollapsed && (
+                  <Droppable droppableId={col.id}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className={`flex-1 px-3 pb-3 space-y-2 transition-colors ${snapshot.isDraggingOver ? "bg-white/50 rounded-xl" : ""}`}
+                      >
+                        {colTasks.map((task: any, index: number) => (
+                          <Draggable key={task.id} draggableId={String(task.id)} index={index}>
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={`bg-white rounded-xl p-3 shadow-sm border border-gray-100 group
+                                  ${snapshot.isDragging ? "shadow-lg rotate-1 border-blue-200" : "hover:shadow-md"} transition-all`}
+                              >
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <div
+                                    {...provided.dragHandleProps}
+                                    className="mt-0.5 text-gray-200 hover:text-gray-400 cursor-grab active:cursor-grabbing shrink-0"
+                                  >
+                                    <GripVertical size={14} />
+                                  </div>
+                                  <p className="text-sm font-semibold text-gray-800 flex-1 leading-tight">{task.title}</p>
+                                  {/* Action buttons: always visible on mobile, hover on desktop */}
+                                  <div className="flex gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition shrink-0">
+                                    <button onClick={() => openEdit(task)} className="p-1 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-500 transition">
+                                      <Pencil size={13} />
+                                    </button>
+                                    <button onClick={() => handleDelete(task.id)} className="p-1 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition">
+                                      <Trash2 size={13} />
+                                    </button>
+                                  </div>
                                 </div>
-                                <p className="text-sm font-semibold text-gray-800 flex-1 leading-tight">{task.title}</p>
-                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition shrink-0">
-                                  <button onClick={() => openEdit(task)} className="p-1 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-500 transition">
-                                    <Pencil size={13} />
-                                  </button>
-                                  <button onClick={() => handleDelete(task.id)} className="p-1 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition">
-                                    <Trash2 size={13} />
-                                  </button>
-                                </div>
-                              </div>
 
-                              {task.description && (
-                                <p className="text-xs text-gray-400 mb-2 line-clamp-2 ml-4">{task.description}</p>
-                              )}
+                                {task.description && (
+                                  <p className="text-xs text-gray-400 mb-2 line-clamp-2 ml-4">{task.description}</p>
+                                )}
 
-                              <div className="flex flex-wrap gap-1.5 items-center ml-4">
-                                {task.priority && (
-                                  <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium border ${priorityColors[task.priority] || "bg-gray-100 text-gray-600"}`}>
-                                    {task.priority}
-                                  </span>
-                                )}
-                                {task.dueDate && (
-                                  <span className={`flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-md ${isOverdue(task.dueDate) ? "bg-red-50 text-red-500" : "bg-gray-50 text-gray-400"}`}>
-                                    <Calendar size={10} />
-                                    {new Date(task.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                                  </span>
-                                )}
-                              </div>
-                              {task.tags && (
-                                <div className="flex flex-wrap gap-1 mt-1.5 ml-4">
-                                  {task.tags.split(",").map((tag: string) => (
-                                    <span key={tag} className="flex items-center gap-0.5 text-xs bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded-md">
-                                      <Tag size={9} />
-                                      {tag.trim()}
+                                <div className="flex flex-wrap gap-1.5 items-center ml-4">
+                                  {task.priority && (
+                                    <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium border ${priorityColors[task.priority] || "bg-gray-100 text-gray-600"}`}>
+                                      {task.priority}
                                     </span>
-                                  ))}
+                                  )}
+                                  {task.dueDate && (
+                                    <span className={`flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-md ${isOverdue(task.dueDate) ? "bg-red-50 text-red-500" : "bg-gray-50 text-gray-400"}`}>
+                                      <Calendar size={10} />
+                                      {new Date(task.dueDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                                    </span>
+                                  )}
                                 </div>
-                              )}
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
+                                {task.tags && (
+                                  <div className="flex flex-wrap gap-1 mt-1.5 ml-4">
+                                    {task.tags.split(",").map((tag: string) => (
+                                      <span key={tag} className="flex items-center gap-0.5 text-xs bg-blue-50 text-blue-500 px-1.5 py-0.5 rounded-md">
+                                        <Tag size={9} />
+                                        {tag.trim()}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
 
-                      {colTasks.length === 0 && !snapshot.isDraggingOver && (
-                        <button
-                          onClick={() => openCreate(col.id)}
-                          className="w-full py-6 border-2 border-dashed border-gray-200 rounded-xl text-xs text-gray-300 hover:border-blue-300 hover:text-blue-400 transition flex flex-col items-center gap-1"
-                        >
-                          <Plus size={16} />
-                          Add task
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </Droppable>
+                        {colTasks.length === 0 && !snapshot.isDraggingOver && (
+                          <button
+                            onClick={() => openCreate(col.id)}
+                            className="w-full py-6 border-2 border-dashed border-gray-200 rounded-xl text-xs text-gray-300 hover:border-blue-300 hover:text-blue-400 transition flex flex-col items-center gap-1"
+                          >
+                            <Plus size={16} />
+                            Add task
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </Droppable>
+                )}
               </div>
             );
           })}
@@ -252,19 +272,24 @@ export default function KanbanBoard({ projectId, projectName }: { projectId: num
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-            <div className="flex justify-between items-center p-5 border-b border-gray-100">
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+          {/* Bottom sheet on mobile, centered modal on sm+ */}
+          <div className="bg-white w-full sm:rounded-2xl sm:max-w-md rounded-t-2xl shadow-xl max-h-[92dvh] flex flex-col overflow-hidden">
+            <div className="flex justify-between items-center p-4 sm:p-5 border-b border-gray-100 shrink-0">
               <div>
-                <h2 className="text-lg font-bold text-gray-800">{editingTask ? "Edit Task" : "Create New Task"}</h2>
-                {projectName && <p className="text-xs text-blue-500 mt-0.5 flex items-center gap-1"><FolderOpen size={11} />{projectName}</p>}
+                <h2 className="text-base sm:text-lg font-bold text-gray-800">{editingTask ? "Edit Task" : "Create New Task"}</h2>
+                {projectName && (
+                  <p className="text-xs text-blue-500 mt-0.5 flex items-center gap-1">
+                    <FolderOpen size={11} />{projectName}
+                  </p>
+                )}
               </div>
               <button onClick={() => { setShowModal(false); setEditingTask(null); }}>
                 <X size={20} className="text-gray-400" />
               </button>
             </div>
 
-            <div className="p-5 space-y-4">
+            <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1">
               <div>
                 <label className="text-xs font-semibold text-gray-500 block mb-1.5">Task Title *</label>
                 <input type="text" placeholder="What needs to be done?" value={form.title}
@@ -308,7 +333,7 @@ export default function KanbanBoard({ projectId, projectName }: { projectId: num
               </div>
             </div>
 
-            <div className="flex gap-3 p-5 border-t border-gray-100">
+            <div className="flex gap-3 p-4 sm:p-5 border-t border-gray-100 shrink-0">
               <button onClick={() => { setShowModal(false); setEditingTask(null); }}
                 className="flex-1 border border-gray-200 text-gray-600 py-2.5 rounded-xl text-sm hover:bg-gray-50">Cancel</button>
               <button onClick={handleSubmit}

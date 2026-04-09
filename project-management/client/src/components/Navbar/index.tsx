@@ -3,10 +3,14 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { Search, Bell, Settings, LogOut, X, MapPin, Sun, Moon } from "lucide-react";
+import { Search, Bell, Settings, LogOut, X, MapPin, Sun, Moon, Menu } from "lucide-react";
 import { useGetAllCalendarEventsQuery, useGetProjectsQuery, useGetUsersQuery } from "@/state/api";
 
-export default function Navbar() {
+interface NavbarProps {
+  onMenuClick: () => void;
+}
+
+export default function Navbar({ onMenuClick }: NavbarProps) {
   const router = useRouter();
   const { data: session } = useSession();
   const [user, setUser] = useState<any>(null);
@@ -23,7 +27,6 @@ export default function Navbar() {
   const { data: projects = [] } = useGetProjectsQuery();
   const { data: users = [] } = useGetUsersQuery();
 
-  // Load theme on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -39,7 +42,6 @@ export default function Navbar() {
     localStorage.setItem("theme", next ? "dark" : "light");
   };
 
-  // Tick every 30 seconds for more accurate reminder windows
   useEffect(() => {
     const interval = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(interval);
@@ -61,7 +63,6 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // Search results
   const searchResults = searchQuery.trim().length > 1 ? [
     ...projects.filter((p: any) => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
       .slice(0, 3).map((p: any) => ({ type: "project", label: p.name, href: `/projects/${p.id}`, icon: "📁" })),
@@ -69,43 +70,29 @@ export default function Navbar() {
       .slice(0, 3).map((u: any) => ({ type: "user", label: u.username, sub: u.email, href: "/users", icon: "👤" })),
   ] : [];
 
-  // ── Fixed Notifications Logic ──
   const notifications = events
     .filter((e: any) => !dismissed.includes(e.id) && e.reminder)
     .map((e: any) => {
       try {
-        // Safely parse date — strip time portion from ISO string, then combine with startTime
-        const rawDate = e.date; // e.g. "2025-03-30T00:00:00.000Z" or "2025-03-30"
-        const datePart = rawDate.split("T")[0]; // always "YYYY-MM-DD"
-
-        // Build event datetime in LOCAL time using explicit parts to avoid UTC shift
+        const datePart = e.date.split("T")[0];
         const [year, month, day] = datePart.split("-").map(Number);
-
         let eventDateTime: Date;
         if (e.startTime) {
-          // startTime is "HH:mm"
           const [hours, minutes] = e.startTime.split(":").map(Number);
           eventDateTime = new Date(year, month - 1, day, hours, minutes, 0);
         } else {
-          // Default to 9:00 AM if no start time
           eventDateTime = new Date(year, month - 1, day, 9, 0, 0);
         }
-
         const reminderMs = Number(e.reminder) * 60 * 1000;
         const reminderStart = new Date(eventDateTime.getTime() - reminderMs);
-
-        // Check if we're currently within the reminder window
         const isInWindow = now >= reminderStart && now <= eventDateTime;
         if (!isInWindow) return null;
-
         const diffMs = eventDateTime.getTime() - now.getTime();
         const diffMins = diffMs / (1000 * 60);
-
         let timeLabel: string;
         if (diffMins <= 0) timeLabel = "Starting now!";
         else if (diffMins < 60) timeLabel = `In ${Math.round(diffMins)} min`;
         else timeLabel = `In ${Math.round(diffMins / 60)}h`;
-
         return { ...e, eventDateTime, diffMins, timeLabel };
       } catch {
         return null;
@@ -131,55 +118,68 @@ export default function Navbar() {
   const displayInitial = displayName?.[0]?.toUpperCase() || "U";
 
   return (
-    <div className="flex items-center justify-between bg-white dark:bg-gray-900 px-6 py-3 border-b border-gray-100 dark:border-gray-800 shrink-0 relative z-20 transition-colors duration-200">
+    <div className="flex items-center justify-between bg-white dark:bg-gray-900 px-3 sm:px-6 py-3 border-b border-gray-100 dark:border-gray-800 shrink-0 relative z-20 transition-colors duration-200 gap-2">
 
-      {/* Search */}
-      <div className="relative" ref={searchRef}>
-        <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 w-80 border border-gray-100 dark:border-gray-700 focus-within:border-blue-300 dark:focus-within:border-blue-500 focus-within:bg-white dark:focus-within:bg-gray-750 transition">
-          <Search className="text-gray-400 shrink-0" size={16} />
-          <input
-            type="text"
-            placeholder="Search projects, users..."
-            value={searchQuery}
-            onChange={e => { setSearchQuery(e.target.value); setShowSearch(true); }}
-            onFocus={() => setShowSearch(true)}
-            className="bg-transparent outline-none text-sm w-full text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
-          />
-          {searchQuery && (
-            <button onClick={() => { setSearchQuery(""); setShowSearch(false); }}>
-              <X size={14} className="text-gray-400" />
-            </button>
-          )}
-        </div>
+      {/* Left: Hamburger (mobile) + Search */}
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        {/* Hamburger — mobile only */}
+        <button
+          onClick={onMenuClick}
+          className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition text-gray-500 dark:text-gray-400 shrink-0"
+          aria-label="Open sidebar"
+        >
+          <Menu size={20} />
+        </button>
 
-        {/* Search Results Dropdown */}
-        {showSearch && searchQuery.trim().length > 1 && (
-          <div className="absolute top-full mt-2 left-0 w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50">
-            {searchResults.length === 0 ? (
-              <div className="px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">
-                No results for "{searchQuery}"
-              </div>
-            ) : (
-              searchResults.map((result: any, idx: number) => (
-                <button
-                  key={idx}
-                  onClick={() => { router.push(result.href); setShowSearch(false); setSearchQuery(""); }}
-                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-left border-b border-gray-50 dark:border-gray-700 last:border-0"
-                >
-                  <span className="text-lg">{result.icon}</span>
-                  <div>
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{result.label}</p>
-                    {result.sub && <p className="text-xs text-gray-400 dark:text-gray-500">{result.sub}</p>}
-                    <p className="text-xs text-blue-400 capitalize">{result.type}</p>
-                  </div>
-                </button>
-              ))
+        {/* Search */}
+        <div className="relative flex-1 max-w-xs" ref={searchRef}>
+          <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 border border-gray-100 dark:border-gray-700 focus-within:border-blue-300 dark:focus-within:border-blue-500 focus-within:bg-white dark:focus-within:bg-gray-750 transition">
+            <Search className="text-gray-400 shrink-0" size={16} />
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={e => { setSearchQuery(e.target.value); setShowSearch(true); }}
+              onFocus={() => setShowSearch(true)}
+              className="bg-transparent outline-none text-sm w-full text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 min-w-0"
+            />
+            {searchQuery && (
+              <button onClick={() => { setSearchQuery(""); setShowSearch(false); }}>
+                <X size={14} className="text-gray-400" />
+              </button>
             )}
           </div>
-        )}
+
+          {/* Search Results Dropdown */}
+          {showSearch && searchQuery.trim().length > 1 && (
+            <div className="absolute top-full mt-2 left-0 w-72 sm:w-80 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50">
+              {searchResults.length === 0 ? (
+                <div className="px-4 py-6 text-center text-sm text-gray-400 dark:text-gray-500">
+                  No results for "{searchQuery}"
+                </div>
+              ) : (
+                searchResults.map((result: any, idx: number) => (
+                  <button
+                    key={idx}
+                    onClick={() => { router.push(result.href); setShowSearch(false); setSearchQuery(""); }}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-left border-b border-gray-50 dark:border-gray-700 last:border-0"
+                  >
+                    <span className="text-lg">{result.icon}</span>
+                    <div>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{result.label}</p>
+                      {result.sub && <p className="text-xs text-gray-400 dark:text-gray-500">{result.sub}</p>}
+                      <p className="text-xs text-blue-400 capitalize">{result.type}</p>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="flex items-center gap-2">
+      {/* Right: Actions */}
+      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
 
         {/* Theme Toggle */}
         <button
@@ -208,7 +208,7 @@ export default function Navbar() {
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 top-full mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50" style={{ width: "340px" }}>
+            <div className="absolute right-0 top-full mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 w-[min(340px,calc(100vw-1rem))]">
               <div className="flex justify-between items-center px-4 py-3 border-b border-gray-100 dark:border-gray-700">
                 <div className="flex items-center gap-2">
                   <Bell size={14} className="text-gray-500 dark:text-gray-400" />
@@ -271,11 +271,16 @@ export default function Navbar() {
           )}
         </div>
 
-        <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition" onClick={() => router.push("/settings")}>
+        {/* Settings — hidden on very small screens */}
+        <button
+          className="hidden sm:block p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition"
+          onClick={() => router.push("/settings")}
+        >
           <Settings size={18} className="text-gray-500 dark:text-gray-400" />
         </button>
 
-        <div className="flex items-center gap-2 ml-1 pl-3 border-l border-gray-100 dark:border-gray-700">
+        {/* User */}
+        <div className="flex items-center gap-2 ml-1 pl-2 sm:pl-3 border-l border-gray-100 dark:border-gray-700">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0">
             {displayInitial}
           </div>
@@ -285,8 +290,13 @@ export default function Navbar() {
           </div>
         </div>
 
-        <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-3 py-1.5 rounded-xl ml-1 transition">
-          <LogOut size={15} /> Logout
+        {/* Logout */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-1 sm:gap-1.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 px-2 sm:px-3 py-1.5 rounded-xl ml-1 transition"
+        >
+          <LogOut size={15} />
+          <span className="hidden sm:inline">Logout</span>
         </button>
       </div>
     </div>

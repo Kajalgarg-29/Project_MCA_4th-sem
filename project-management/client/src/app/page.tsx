@@ -161,7 +161,7 @@ export default function Home() {
 
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800?text-white">
+            <h1 className="text-2xl font-bold text-black?text-white">
               {greeting}, {currentUser?.username || "there"} 👋
             </h1>
             <p className="text-gray-400 text-sm mt-0.5">
@@ -204,11 +204,10 @@ export default function Home() {
           </div>
         )}
 
-        {/* ══ SECTION 1 — PRIMARY KPIs ══════════════════════════ */}
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1 h-5 bg-blue-600 rounded-full" />
-            <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Key Performance Indicators</h2>
+            <h2 className="text-sm font-bold text-black uppercase tracking-wider">Key Performance Indicators</h2>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <KPICard title="Total Website Traffic"     value={formatNum(totalReach)}            sub={`${formatNum(totalClicks)} clicks · ${ctr.toFixed(2)}% CTR`} icon={Globe}        color="bg-blue-500"   trend="up"                              trendValue="+18% vs last month" />
@@ -221,7 +220,7 @@ export default function Home() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1 h-5 bg-green-600 rounded-full" />
-            <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">Financial Metrics</h2>
+            <h2 className="text-sm font-bold text-black uppercase tracking-wider">Financial Metrics</h2>
           </div>
           <div className="grid grid-cols-4 gap-4">
             <KPICard title="Total Budget"          value={formatCurrency(totalBudget)} sub={`${formatCurrency(budgetLeft)} remaining`}                                                    icon={DollarSign}   color="bg-teal-500"   trend="up"                                         trendValue="On track" />
@@ -276,7 +275,7 @@ export default function Home() {
                 const pct = idx === 0 ? 100 : funnelData[0].value > 0 ? (stage.value / funnelData[0].value) * 100 : 0;
                 return (
                   <div key={stage.stage}>
-                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                    <div className="flex justify-between text-xs text-black mb-1">
                       <span className="font-medium">{stage.stage}</span>
                       <span className="font-bold" style={{ color: stage.fill }}>{formatNum(stage.value)}</span>
                     </div>
@@ -338,7 +337,7 @@ export default function Home() {
                     <div key={d.name} className="flex justify-between items-center">
                       <div className="flex items-center gap-1.5">
                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: COLORS[i] }} />
-                        <span className="text-xs text-gray-500">{d.name}</span>
+                        <span className="text-xs text-black">{d.name}</span>
                       </div>
                       <span className="text-xs font-semibold text-gray-700">{d.value} campaign{d.value > 1 ? "s" : ""}</span>
                     </div>

@@ -4,15 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Home, LayoutDashboard, BarChart2, Clock, Calendar, FileText, Share2,
+  Home, BarChart2, Clock, Calendar, FileText, Share2,
   Radio, Megaphone, Users, Shield, Settings,
-  ChevronDown, ChevronRight, Plus, X, FolderOpen, Trash2
+  ChevronDown, ChevronRight, Plus, X, FolderOpen, Trash2,
 } from "lucide-react";
 import { useGetProjectsQuery, useCreateProjectMutation, useDeleteProjectMutation } from "@/state/api";
 
 const navItems = [
   { label: "Home", href: "/", icon: Home },
-  // { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Analytics", href: "/analytics", icon: BarChart2 },
   { label: "Timeline", href: "/timeline", icon: Clock },
   { label: "Calendar", href: "/calendar", icon: Calendar },
@@ -27,7 +26,12 @@ const navItems = [
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { data: projects = [] } = useGetProjectsQuery();
@@ -50,6 +54,7 @@ export default function Sidebar() {
     setShowModal(false);
     if ("data" in result && result.data) {
       router.push(`/projects/${result.data.id}`);
+      onClose();
     }
   };
 
@@ -63,11 +68,29 @@ export default function Sidebar() {
 
   return (
     <>
-      <aside className="w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 h-screen flex flex-col fixed left-0 top-0 z-30 overflow-hidden transition-colors duration-200">
-        
+      {/* Mobile backdrop */}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar panel */}
+      <aside
+        className={`
+          fixed left-0 top-0 h-screen w-64 z-50
+          bg-white dark:bg-gray-900
+          border-r border-gray-100 dark:border-gray-800
+          flex flex-col overflow-hidden
+          transition-transform duration-300 ease-in-out
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0
+        `}
+      >
         {/* Logo */}
-        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0">
-          <Link href="/">
+        <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0 flex items-center justify-between">
+          <Link href="/" onClick={onClose}>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shrink-0">
                 <span className="text-white font-bold text-sm">M</span>
@@ -78,15 +101,22 @@ export default function Sidebar() {
               </div>
             </div>
           </Link>
+          {/* Close button — mobile only */}
+          <button
+            onClick={onClose}
+            className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"
+          >
+            <X size={18} />
+          </button>
         </div>
 
-        {/* Nav - scrollable */}
+        {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-3 px-3">
           <div className="space-y-0.5">
             {navItems.map((item) => {
               const active = pathname === item.href;
               return (
-                <Link key={item.href} href={item.href}>
+                <Link key={item.href} href={item.href} onClick={onClose}>
                   <div className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition cursor-pointer
                     ${active
                       ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
@@ -125,7 +155,7 @@ export default function Sidebar() {
                   const active = pathname === `/projects/${project.id}`;
                   return (
                     <div key={project.id} className="relative group">
-                      <Link href={`/projects/${project.id}`}>
+                      <Link href={`/projects/${project.id}`} onClick={onClose}>
                         <div className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition cursor-pointer pr-8
                           ${active
                             ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium"
@@ -156,7 +186,7 @@ export default function Sidebar() {
 
       {/* Create Project Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] px-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-lg font-bold text-gray-800 dark:text-gray-100">Create New Project</h2>

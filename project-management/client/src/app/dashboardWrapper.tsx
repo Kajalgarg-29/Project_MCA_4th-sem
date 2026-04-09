@@ -10,6 +10,7 @@ export default function DashboardWrapper({ children }: { children: React.ReactNo
   const router = useRouter();
   const { data: session, status } = useSession();
   const [authorized, setAuthorized] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -39,9 +40,12 @@ export default function DashboardWrapper({ children }: { children: React.ReactNo
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
-      <Sidebar />
-      <div className="flex-1 flex flex-col ml-64 min-h-screen overflow-hidden">
-        <Navbar />
+      {/* Sidebar receives open state + toggle handler */}
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      {/* Main content — offset by sidebar width on desktop only */}
+      <div className="flex-1 flex flex-col min-h-screen overflow-hidden lg:ml-64">
+        <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
           {children}
         </main>
