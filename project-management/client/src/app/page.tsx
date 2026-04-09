@@ -159,10 +159,9 @@ export default function Home() {
     <DashboardWrapper>
       <div className="p-6 max-w-7xl mx-auto space-y-6">
 
-        {/* ── Welcome Bar ─────────────────────────────────────── */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
+            <h1 className="text-2xl font-bold text-gray-800?text-white">
               {greeting}, {currentUser?.username || "there"} 👋
             </h1>
             <p className="text-gray-400 text-sm mt-0.5">
