@@ -77,7 +77,7 @@ export default function TeamsPage() {
       <div className="p-6 max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Teams</h1>
+            <h1 className="text-2xl font-bold text-gray-800?text-white">Teams</h1>
             <p className="text-gray-400 text-sm mt-1">
               {teams.length} teams · {users.length} members
             </p>

@@ -247,7 +247,8 @@ export default function Home() {
   return (
     <DashboardWrapper>
       <div className="p-3 sm:p-4 lg:p-5 max-w-7xl mx-auto space-y-4">
-<div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">          <div>
+<div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">       
+     <div>
             <h1 className="text-2xl font-bold text-black?text-white">
               {greeting}, {currentUser?.username || "there"} 👋
             </h1>
@@ -307,7 +308,7 @@ export default function Home() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1 h-5 bg-blue-600 rounded-full" />
-            <h2 className="text-xs font-semibold text-gray-700 uppercase tracking-wide">
+            <h2 className="text-xs font-semibold text-gray-700?text-white uppercase tracking-wide">
               Key Performance Indicators
             </h2>
           </div>

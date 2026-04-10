@@ -529,7 +529,7 @@ export default function AttendancePage() {
         {/* ── Header ── */}
         <div className="flex flex-wrap justify-between items-start gap-3 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Attendance</h1>
+            <h1 className="text-2xl font-bold text-gray-900?text-white">Attendance</h1>
             <p className="text-gray-400 text-sm mt-0.5">
               {today.toLocaleDateString("en-US", {
                 weekday: "long",
@@ -762,7 +762,7 @@ export default function AttendancePage() {
             >
               <ChevronLeft size={16} />
             </button>
-            <span className="text-sm font-bold text-gray-800 w-36 text-center">
+            <span className="text-sm font-bold text-gray-800?text-white w-36 text-center">
               {MONTHS[viewMonth - 1]} {viewYear}
             </span>
             <button

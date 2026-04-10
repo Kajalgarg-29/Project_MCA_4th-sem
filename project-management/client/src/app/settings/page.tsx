@@ -98,13 +98,13 @@ export default function SettingsPage() {
 
   return (
     <DashboardWrapper>
-      <div className="min-h-screen bg-gray-50/60">
+      <div className="min-h-screen bg-gray-black">
         <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
 
           {/* Page header */}
           <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Settings</h1>
-            <p className="text-sm text-gray-400 mt-1">Manage your account, appearance, and security preferences.</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900?text-white tracking-tight">Settings</h1>
+            <p className="text-sm text-gray-400?text-gray-500 mt-1">Manage your account, appearance, and security preferences.</p>
           </div>
 
           <div className="flex flex-col lg:flex-row gap-5 lg:gap-6">

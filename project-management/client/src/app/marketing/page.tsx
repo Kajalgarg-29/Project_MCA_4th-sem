@@ -48,7 +48,7 @@ export default function MarketingPage() {
         {/* ── Header ── */}
         <div className="flex flex-wrap justify-between items-start gap-3 mb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Marketing Hub</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800?text-white">Marketing Hub</h1>
             <p className="text-gray-400 text-sm mt-0.5">Complete overview of your marketing performance</p>
           </div>
           <Link href="/campaigns">

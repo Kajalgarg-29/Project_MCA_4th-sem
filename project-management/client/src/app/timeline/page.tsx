@@ -89,7 +89,7 @@ export default function TimelinePage() {
         {/* ── Header ── */}
         <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 mb-5 sm:mb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Timeline</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900?text-white">Timeline</h1>
             <p className="text-gray-400 text-xs sm:text-sm mt-0.5">Project schedule and Gantt view</p>
           </div>
 
@@ -97,7 +97,7 @@ export default function TimelinePage() {
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={goToToday}
-              className="px-3 py-1.5 text-xs sm:text-sm border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition font-medium"
+              className="px-3 py-1.5 text-xs sm:text-sm border border-gray-200 rounded-lg text-gray-600 bg-gray-50 transition font-medium"
             >
               Today
             </button>

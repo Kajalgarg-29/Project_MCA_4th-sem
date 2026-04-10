@@ -209,7 +209,7 @@ export default function KanbanBoard({ projectId, projectName }: { projectId: num
                                   <p className="text-sm font-semibold text-gray-800 flex-1 leading-tight">{task.title}</p>
                                   {/* Action buttons: always visible on mobile, hover on desktop */}
                                   <div className="flex gap-1 lg:opacity-0 lg:group-hover:opacity-100 transition shrink-0">
-                                    <button onClick={() => openEdit(task)} className="p-1 hover:bg-blue-50 rounded-lg text-gray-400 hover:text-blue-500 transition">
+                                    <button onClick={() => openEdit(task)} className="p-1 hover:bg-blue-50 rounded-lg text-gray-400?text-white hover:text-blue-500 transition">
                                       <Pencil size={13} />
                                     </button>
                                     <button onClick={() => handleDelete(task.id)} className="p-1 hover:bg-red-50 rounded-lg text-gray-400 hover:text-red-500 transition">
@@ -274,10 +274,10 @@ export default function KanbanBoard({ projectId, projectName }: { projectId: num
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
           {/* Bottom sheet on mobile, centered modal on sm+ */}
-          <div className="bg-white w-full sm:rounded-2xl sm:max-w-md rounded-t-2xl shadow-xl max-h-[92dvh] flex flex-col overflow-hidden">
+          <div className="bg-black w-full sm:rounded-2xl sm:max-w-md rounded-t-2xl shadow-xl max-h-[92dvh] flex flex-col overflow-hidden">
             <div className="flex justify-between items-center p-4 sm:p-5 border-b border-gray-100 shrink-0">
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-gray-800">{editingTask ? "Edit Task" : "Create New Task"}</h2>
+                <h2 className="text-base sm:text-lg font-bold text-gray-800?text-white">{editingTask ? "Edit Task" : "Create New Task"}</h2>
                 {projectName && (
                   <p className="text-xs text-blue-500 mt-0.5 flex items-center gap-1">
                     <FolderOpen size={11} />{projectName}
@@ -295,7 +295,8 @@ export default function KanbanBoard({ projectId, projectName }: { projectId: num
                 <input type="text" placeholder="What needs to be done?" value={form.title}
                   onChange={e => handleChange("title", e.target.value)}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50" autoFocus />
-              </div>
+                           
+                    </div>
               <div>
                 <label className="text-xs font-semibold text-gray-500 block mb-1.5">Description</label>
                 <textarea placeholder="Add more details..." value={form.description}
@@ -306,14 +307,15 @@ export default function KanbanBoard({ projectId, projectName }: { projectId: num
                 <div>
                   <label className="text-xs font-semibold text-gray-500 block mb-1.5">Status</label>
                   <select value={form.status} onChange={e => handleChange("status", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400">
                     {statusColumns.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
                   </select>
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-500 block mb-1.5">Priority</label>
                   <select value={form.priority} onChange={e => handleChange("priority", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+                               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400">
+
                     {["Urgent", "High", "Medium", "Low"].map(p => <option key={p}>{p}</option>)}
                   </select>
                 </div>
@@ -322,13 +324,15 @@ export default function KanbanBoard({ projectId, projectName }: { projectId: num
                 <div>
                   <label className="text-xs font-semibold text-gray-500 block mb-1.5">Due Date</label>
                   <input type="date" value={form.dueDate} onChange={e => handleChange("dueDate", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
+                              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
+
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-500 block mb-1.5">Tags</label>
                   <input type="text" placeholder="design, dev, ..." value={form.tags}
                     onChange={e => handleChange("tags", e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
+                               className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400" />
+
                 </div>
               </div>
             </div>
@@ -346,4 +350,4 @@ export default function KanbanBoard({ projectId, projectName }: { projectId: num
       )}
     </div>
   );
-}
+} 

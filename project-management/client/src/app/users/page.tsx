@@ -111,7 +111,7 @@ export default function UsersPage() {
         {/* Header */}
         <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 mb-5 sm:mb-6">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Users</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800?text-white">Users</h1>
             <p className="text-gray-400 text-xs sm:text-sm mt-0.5">{users.length} registered members</p>
           </div>
           {canEdit && (

@@ -64,7 +64,7 @@ export default function ReportsPage() {
         {/* Header */}
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Automated Reports</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800?text-white">Automated Reports</h1>
             <p className="text-xs sm:text-sm text-gray-400 mt-0.5">AI-generated weekly & monthly performance summaries</p>
           </div>
 

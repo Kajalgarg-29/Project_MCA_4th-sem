@@ -64,7 +64,7 @@ export default function SocialMediaPage() {
 
         {/* Header */}
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Social Media Metrics</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-800?text-white">Social Media Metrics</h1>
           <p className="text-xs sm:text-sm text-gray-400 mt-0.5">Based on your real campaign data across platforms</p>
         </div>
 
