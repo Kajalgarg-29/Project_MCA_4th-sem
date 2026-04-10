@@ -286,37 +286,47 @@ export default function CampaignsPage() {
           ))}
         </div>
 
-        {/* ── Filters ── */}
-        <div className="flex flex-wrap gap-2 mb-5 items-center">
-          <div className="flex flex-wrap gap-1 bg-gray-100 rounded-lg p-1">
-            {["All", ...STATUSES].map(s => (
-              <button
-                key={s}
-                onClick={() => setFilterStatus(s)}
-                className={`px-2.5 py-1 rounded-md text-xs font-medium transition
-                  ${filterStatus === s ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-          <select
-            value={filterType}
-            onChange={e => setFilterType(e.target.value)}
-            className="border border-gray-200 rounded-lg px-3 py-1.5 text-xs text-gray-600 outline-none focus:border-blue-400 bg-white"
-          >
-            <option value="All">All Types</option>
-            {TYPES.map(t => <option key={t}>{t}</option>)}
-          </select>
-          {(filterStatus !== "All" || filterType !== "All") && (
-            <button
-              onClick={() => { setFilterStatus("All"); setFilterType("All"); }}
-              className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1.5 hover:bg-gray-100 rounded-lg transition"
-            >
-              Clear ✕
-            </button>
-          )}
-        </div>
+     {/* ── Filters ── */}
+<div className="flex flex-col gap-2 mb-5">
+  <div
+    className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0"
+    style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } as any}
+  >
+    <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 w-max">
+      {["All", ...STATUSES].map(s => (
+        <button
+          key={s}
+          onClick={() => setFilterStatus(s)}
+          className={`px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition
+            ${filterStatus === s
+              ? "bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm"
+              : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"}`}
+        >
+          {s}
+        </button>
+      ))}
+    </div>
+  </div>
+
+  <div className="flex items-center gap-2">
+    <select
+      value={filterType}
+      onChange={e => setFilterType(e.target.value)}
+      className="flex-1 sm:flex-none border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-1.5 text-xs text-gray-600 dark:text-gray-300 outline-none focus:border-blue-400 bg-white dark:bg-gray-900"
+    >
+      <option value="All">All Types</option>
+      {TYPES.map(t => <option key={t}>{t}</option>)}
+    </select>
+    {(filterStatus !== "All" || filterType !== "All") && (
+      <button
+        onClick={() => { setFilterStatus("All"); setFilterType("All"); }}
+        className="text-xs text-gray-400 hover:text-gray-600 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 px-2.5 py-1.5 rounded-lg transition whitespace-nowrap"
+      >
+        Clear ✕
+      </button>
+    )}
+  </div>
+</div>
 
         {/* ── Content ── */}
         <div className="flex flex-col lg:flex-row gap-5">

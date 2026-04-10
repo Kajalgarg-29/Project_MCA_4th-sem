@@ -151,7 +151,8 @@ function RecordModal({
               value={form.date}
               max={maxDate}
               onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 text-black bg-white"
+
             />
           </div>
 
@@ -193,7 +194,7 @@ function RecordModal({
                         : "",
                     }))
                   }
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 text-black bg-white"
                 />
               </div>
               <div>
@@ -211,7 +212,7 @@ function RecordModal({
                         : "",
                     }))
                   }
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 text-black bg-white"
                 />
               </div>
             </div>
@@ -228,7 +229,7 @@ function RecordModal({
               onChange={(e) =>
                 setForm((f) => ({ ...f, notes: e.target.value }))
               }
-              className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition"
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-blue-400 text-black bg-white"
             />
           </div>
         </div>

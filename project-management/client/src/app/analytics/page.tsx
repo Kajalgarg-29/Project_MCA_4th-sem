@@ -289,16 +289,16 @@ const handleExportProjects = () =>
 
   return (
     <DashboardWrapper>
-      <div className="min-h-screen p-6 bg-slate-50">
+     <div className="min-h-screen p-6 bg-slate-50 dark:bg-gray-950">
         <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <BarChart2 size={20} color={C.blue} />
-              <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
+              <h1 className="text-2xl font-extrabold text-gray-900?text-white tracking-tight">
                 Analytics
               </h1>
             </div>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-400 ">
               {now.toLocaleDateString("en-IN", { dateStyle: "long" })}
             </p>
           </div>

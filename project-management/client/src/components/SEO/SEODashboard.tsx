@@ -33,14 +33,14 @@ export default function SEODashboard() {
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900 mb-1">SEO AI Suggestions</h1>
-        <p className="text-sm text-gray-500">Enter your website URL to get AI-powered keyword, content, and competitor insights.</p>
+        <h1 className="text-2xl font-semibold text-gray-900?text-white mb-1">SEO AI Suggestions</h1>
+        <p className="text-sm text-gray-500?text-white">Enter your website URL to get AI-powered keyword, content, and competitor insights.</p>
       </div>
       <div className="flex gap-3 mb-6">
         <input type="text" value={url} onChange={e => setUrl(e.target.value)}
           onKeyDown={e => e.key === "Enter" && handleAnalyze()}
           placeholder="Enter your website URL (e.g. mystore.com)"
-          className="flex-1 px-4 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" />
+          className="flex-1 px-4 py-2.5 text-sm border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-gray-900" />
         <button onClick={handleAnalyze} disabled={loading}
           className="px-5 py-2.5 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-60">
           {loading ? "Analyzing..." : "Analyze ↗"}

@@ -50,7 +50,7 @@ export default function ProjectsPage() {
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Projects</h1>
+            <h1 className="text-2xl font-bold text-gray-800?text-white">Projects</h1>
             <p className="text-sm text-gray-400 mt-1">{projects.length} total projects</p>
           </div>
           <button

@@ -128,7 +128,7 @@ function KPICard({
         {title}
       </p>
       {sub && (
-        <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 truncate sm:whitespace-normal">
+        <p className="text-[10px] sm:text-xs  dark:text-gray-500 mt-0.5 truncate sm:whitespace-normal">
           {sub}
         </p>
       )}
@@ -247,12 +247,11 @@ export default function Home() {
   return (
     <DashboardWrapper>
       <div className="p-3 sm:p-4 lg:p-5 max-w-7xl mx-auto space-y-4">
-<div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">       
-     <div>
+<div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-0">          <div>
             <h1 className="text-2xl font-bold text-black?text-white">
               {greeting}, {currentUser?.username || "there"} 👋
             </h1>
-            <p className="text-gray-400 text-sm mt-0.5">
+            <p className="text-gray-400 dark:text-gray-500 text-sm mt-0.5">
               {today.toLocaleDateString("en-US", {
                 weekday: "long",
                 year: "numeric",
@@ -268,7 +267,7 @@ export default function Home() {
           </div>
 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">            <button
               onClick={() => setLastUpdated(new Date())}
-              className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100"
+              className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100"
             >
               {/* <RefreshCw size={12} /> */}
               Last updated{" "}
@@ -348,12 +347,12 @@ export default function Home() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1 h-5 bg-green-600 rounded-full" />
-            <h2 className="text-sm font-bold text-black uppercase tracking-wider">
+            <h2 className="text-sm font-bold text-black?text-white uppercase tracking-wider">
               Financial Metrics
             </h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4gap-3 sm:gap-3 sm:gap-3 sm:gap-3 sm:gap-3 sm:gap-4">
-            <KPICard
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">   
+           <KPICard
               title="Total Budget"
               value={formatCurrency(totalBudget)}
               sub={`${formatCurrency(budgetLeft)} remaining`}
@@ -405,7 +404,7 @@ export default function Home() {
                 <h3 className="font-bold text-gray-800">
                   Traffic & Conversion Trend
                 </h3>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                   Last 6 months performance
                 </p>
               </div>
@@ -470,9 +469,9 @@ export default function Home() {
             </ResponsiveContainer>
           </div>
           {/* Conversion Funnel */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <h3 className="font-bold text-gray-800 mb-1">Conversion Funnel</h3>
-            <p className="text-xs text-gray-400 mb-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm">
+            <h3 className="font-bold text-gray-800?text-white mb-1">Conversion Funnel</h3>
+            <p className="text-xs text-gray-400?text-white dark:text-gray-500 mb-4">
               Traffic → Clicks → Leads
             </p>
             <div className="space-y-3">
@@ -532,7 +531,7 @@ export default function Home() {
           {/* Monthly Spend */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h3 className="font-bold text-gray-800 mb-1">Monthly Ad Spend</h3>
-            <p className="text-xs text-gray-400 mb-4">
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
               Budget utilization over time
             </p>
             <ResponsiveContainer width="100%" height={160}>
@@ -563,7 +562,7 @@ export default function Home() {
           {/* Campaign Mix */}
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
             <h3 className="font-bold text-gray-800 mb-1">Campaign Mix</h3>
-            <p className="text-xs text-gray-400 mb-3">By channel type</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">By channel type</p>
             {campaignTypeData.length > 0 ? (
               <>
                 <ResponsiveContainer width="100%" height={120}>
@@ -734,7 +733,7 @@ export default function Home() {
                           <p className="text-sm font-semibold text-gray-800 truncate">
                             {c.name}
                           </p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-gray-400 dark:text-gray-500">
                             {c.type} · {c.status}
                           </p>
                         </div>
@@ -743,7 +742,7 @@ export default function Home() {
                             {(c.conversions || 0).toLocaleString()} conv.
                           </p>
                           {cplVal && (
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-gray-400 dark:text-gray-500">
                               ₹{cplVal} CPL
                             </p>
                           )}
@@ -799,7 +798,7 @@ export default function Home() {
                             {p.name}
                           </p>
                           {p.description && (
-                            <p className="text-xs text-gray-400 truncate">
+                            <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
                               {p.description}
                             </p>
                           )}
