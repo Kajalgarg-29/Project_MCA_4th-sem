@@ -68,7 +68,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile backdrop */}
       {isOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-40"
@@ -76,7 +75,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         />
       )}
 
-      {/* Sidebar panel */}
       <aside
         className={`
           fixed left-0 top-0 h-screen w-64 z-50
@@ -88,7 +86,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           lg:translate-x-0
         `}
       >
-        {/* Logo */}
         <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-800 shrink-0 flex items-center justify-between">
           <Link href="/" onClick={onClose}>
             <div className="flex items-center gap-2">
@@ -101,7 +98,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </div>
             </div>
           </Link>
-          {/* Close button — mobile only */}
           <button
             onClick={onClose}
             className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400"
@@ -110,7 +106,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </button>
         </div>
 
-        {/* Nav */}
         <nav className="flex-1 overflow-y-auto py-3 px-3">
           <div className="space-y-0.5">
             {navItems.map((item) => {
@@ -130,7 +125,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             })}
           </div>
 
-          {/* Projects Section */}
           <div className="mt-5">
             <div className="flex items-center justify-between px-3 mb-1.5">
               <button
@@ -184,7 +178,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </nav>
       </aside>
 
-      {/* Create Project Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] px-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 w-full max-w-md">

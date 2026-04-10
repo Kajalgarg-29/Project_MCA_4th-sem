@@ -11,120 +11,186 @@ export default function ReportsPage() {
   const [aiSummary, setAiSummary] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [reportGenerated, setReportGenerated] = useState(false);
+
   const today = new Date();
   const { data: projects = [] } = useGetProjectsQuery();
   const { data: campaigns = [] } = useGetCampaignsQuery();
   const { data: attendance = [] } = useGetAttendanceSummaryQuery({ month: today.getMonth() + 1, year: today.getFullYear() });
-  const totalReach = campaigns.reduce((s, c: any) => s + (c.reach || 0), 0);
-  const totalClicks = campaigns.reduce((s, c: any) => s + (c.clicks || 0), 0);
+
+  const totalReach       = campaigns.reduce((s, c: any) => s + (c.reach || 0), 0);
+  const totalClicks      = campaigns.reduce((s, c: any) => s + (c.clicks || 0), 0);
   const totalConversions = campaigns.reduce((s, c: any) => s + (c.conversions || 0), 0);
-  const totalBudget = campaigns.reduce((s, c: any) => s + (c.budget || 0), 0);
-  const totalSpent = campaigns.reduce((s, c: any) => s + (c.spent || 0), 0);
-  const activeCampaigns = campaigns.filter((c: any) => c.status === "Active").length;
-  const ctr = totalReach > 0 ? ((totalClicks / totalReach) * 100).toFixed(2) : "0.00";
-  const convRate = totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(2) : "0.00";
-  const roi = totalSpent > 0 ? (((totalBudget - totalSpent) / totalSpent) * 100).toFixed(1) : "0.0";
-  const overdueProjects = projects.filter((p: any) => p.endDate && new Date(p.endDate) < today).length;
-  const topCampaign = [...campaigns].sort((a: any, b: any) => (b.conversions || 0) - (a.conversions || 0))[0] as any;
+  const totalBudget      = campaigns.reduce((s, c: any) => s + (c.budget || 0), 0);
+  const totalSpent       = campaigns.reduce((s, c: any) => s + (c.spent || 0), 0);
+  const activeCampaigns  = campaigns.filter((c: any) => c.status === "Active").length;
+  const ctr              = totalReach > 0 ? ((totalClicks / totalReach) * 100).toFixed(2) : "0.00";
+  const convRate         = totalClicks > 0 ? ((totalConversions / totalClicks) * 100).toFixed(2) : "0.00";
+  const roi              = totalSpent > 0 ? (((totalBudget - totalSpent) / totalSpent) * 100).toFixed(1) : "0.0";
+  const overdueProjects  = projects.filter((p: any) => p.endDate && new Date(p.endDate) < today).length;
+  const topCampaign      = [...campaigns].sort((a: any, b: any) => (b.conversions || 0) - (a.conversions || 0))[0] as any;
 
   const generateReport = async () => {
     setIsGenerating(true); setReportGenerated(false); setAiSummary("");
     const prompt = `You are a marketing analyst. Write a ${reportType} performance report in 4-5 sentences, human-readable and insightful. Data: Reach: ${totalReach.toLocaleString()}, Clicks: ${totalClicks.toLocaleString()} (CTR: ${ctr}%), Conversions: ${totalConversions} (Rate: ${convRate}%), Budget: Rs${totalBudget.toLocaleString()}, Spent: Rs${totalSpent.toLocaleString()}, ROI: ${roi}%, Active Campaigns: ${activeCampaigns}, Top Campaign: ${topCampaign?.name || "None"} with ${topCampaign?.conversions || 0} conversions, Overdue Projects: ${overdueProjects}, Total Projects: ${projects.length}. Write like a senior marketing manager briefing their team. Start with overall performance, highlight what worked, what needs attention, end with a recommendation. Be specific with numbers.`;
     try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, messages: [{ role: "user", content: prompt }] }) });
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 1000, messages: [{ role: "user", content: prompt }] }),
+      });
       const data = await res.json();
       setAiSummary(data.content?.map((b: any) => b.text || "").join("") || "Could not generate summary.");
-    } catch { setAiSummary("Failed to generate AI summary. Please try again."); }
+    } catch {
+      setAiSummary("Failed to generate AI summary. Please try again.");
+    }
     setIsGenerating(false); setReportGenerated(true);
   };
 
   const downloadReport = () => {
-    const blob = new Blob([`${reportType.toUpperCase()} PERFORMANCE REPORT\nGenerated: ${today.toLocaleDateString()}\n${"=".repeat(60)}\n\nAI SUMMARY\n----------\n${aiSummary}\n\nKEY METRICS\n-----------\nTotal Reach: ${totalReach.toLocaleString()}\nTotal Clicks: ${totalClicks.toLocaleString()}\nCTR: ${ctr}%\nConversions: ${totalConversions}\nConversion Rate: ${convRate}%\nTotal Budget: Rs${totalBudget.toLocaleString()}\nTotal Spent: Rs${totalSpent.toLocaleString()}\nROI: ${roi}%\nActive Campaigns: ${activeCampaigns}\nTop Campaign: ${topCampaign?.name || "None"}\nActive Projects: ${projects.length}\nOverdue: ${overdueProjects}\n${"=".repeat(60)}\nGenerated by ManageX`], { type: "text/plain" });
-    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${reportType}-report-${today.toISOString().split("T")[0]}.txt`; a.click();
+    const blob = new Blob(
+      [`${reportType.toUpperCase()} PERFORMANCE REPORT\nGenerated: ${today.toLocaleDateString()}\n${"=".repeat(60)}\n\nAI SUMMARY\n----------\n${aiSummary}\n\nKEY METRICS\n-----------\nTotal Reach: ${totalReach.toLocaleString()}\nTotal Clicks: ${totalClicks.toLocaleString()}\nCTR: ${ctr}%\nConversions: ${totalConversions}\nConversion Rate: ${convRate}%\nTotal Budget: Rs${totalBudget.toLocaleString()}\nTotal Spent: Rs${totalSpent.toLocaleString()}\nROI: ${roi}%\nActive Campaigns: ${activeCampaigns}\nTop Campaign: ${topCampaign?.name || "None"}\nActive Projects: ${projects.length}\nOverdue: ${overdueProjects}\n${"=".repeat(60)}\nGenerated by ManageX`],
+      { type: "text/plain" }
+    );
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${reportType}-report-${today.toISOString().split("T")[0]}.txt`;
+    a.click();
   };
 
   return (
     <DashboardWrapper>
-      <div className="p-6 max-w-5xl mx-auto space-y-6">
-        <div className="flex justify-between items-center">
+      <div className="p-4 sm:p-6 max-w-5xl mx-auto space-y-4 sm:space-y-6">
+
+        {/* Header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Automated Reports</h1>
-            <p className="text-sm text-gray-400 mt-0.5">AI-generated weekly & monthly performance summaries</p>
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-800">Automated Reports</h1>
+            <p className="text-xs sm:text-sm text-gray-400 mt-0.5">AI-generated weekly & monthly performance summaries</p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex bg-gray-100 rounded-xl p-1 gap-1">
+
+          {/* Controls — stack on mobile, row on sm+ */}
+          <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2 sm:gap-3">
+            {/* Toggle */}
+            <div className="flex bg-gray-100 rounded-xl p-1 gap-1 self-start xs:self-auto">
               {(["weekly", "monthly"] as ReportType[]).map(t => (
-                <button key={t} onClick={() => { setReportType(t); setReportGenerated(false); setAiSummary(""); }}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all capitalize ${reportType === t ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>{t}</button>
+                <button
+                  key={t}
+                  onClick={() => { setReportType(t); setReportGenerated(false); setAiSummary(""); }}
+                  className={`px-3 sm:px-4 py-1.5 rounded-lg text-sm font-medium transition-all capitalize ${reportType === t ? "bg-white text-gray-800 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                >
+                  {t}
+                </button>
               ))}
             </div>
-            <button onClick={generateReport} disabled={isGenerating}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition">
+
+            {/* Generate button */}
+            <button
+              onClick={generateReport}
+              disabled={isGenerating}
+              className="flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition"
+            >
               {isGenerating ? <RefreshCw size={15} className="animate-spin" /> : <Sparkles size={15} />}
               {isGenerating ? "Generating..." : "Generate Report"}
             </button>
           </div>
         </div>
-        <div className="grid grid-cols-4 gap-4">
+
+        {/* Summary cards — 2×2 on mobile, 4-col on md+ */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {[
-            { label: "Total Reach", value: totalReach.toLocaleString(), icon: TrendingUp, color: "text-blue-500 bg-blue-50", sub: `CTR ${ctr}%` },
-            { label: "Conversions", value: totalConversions.toLocaleString(), icon: Target, color: "text-green-500 bg-green-50", sub: `Rate ${convRate}%` },
-            { label: "Budget Used", value: `Rs${totalSpent.toLocaleString()}`, icon: BarChart2, color: "text-orange-500 bg-orange-50", sub: `of Rs${totalBudget.toLocaleString()}` },
-            { label: "Active Projects", value: projects.length.toString(), icon: Users, color: "text-purple-500 bg-purple-50", sub: `${overdueProjects} overdue` },
+            { label: "Total Reach",     value: totalReach.toLocaleString(),      icon: TrendingUp, color: "text-blue-500 bg-blue-50",     sub: `CTR ${ctr}%` },
+            { label: "Conversions",     value: totalConversions.toLocaleString(), icon: Target,     color: "text-green-500 bg-green-50",   sub: `Rate ${convRate}%` },
+            { label: "Budget Used",     value: `Rs${totalSpent.toLocaleString()}`, icon: BarChart2, color: "text-orange-500 bg-orange-50", sub: `of Rs${totalBudget.toLocaleString()}` },
+            { label: "Active Projects", value: projects.length.toString(),        icon: Users,      color: "text-purple-500 bg-purple-50", sub: `${overdueProjects} overdue` },
           ].map(m => (
-            <div key={m.label} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${m.color} mb-3`}><m.icon size={17} /></div>
-              <p className="text-2xl font-bold text-gray-800">{m.value}</p>
-              <p className="text-sm font-medium text-gray-600 mt-0.5">{m.label}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{m.sub}</p>
+            <div key={m.label} className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 shadow-sm">
+              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center ${m.color} mb-2 sm:mb-3`}>
+                <m.icon size={16} />
+              </div>
+              <p className="text-xl sm:text-2xl font-bold text-gray-800 truncate">{m.value}</p>
+              <p className="text-xs sm:text-sm font-medium text-gray-600 mt-0.5">{m.label}</p>
+              <p className="text-xs text-gray-400 mt-0.5 truncate">{m.sub}</p>
             </div>
           ))}
         </div>
+
+        {/* AI Summary card */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+
+          {/* Card header */}
+          <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center"><Sparkles size={16} className="text-blue-600" /></div>
+              <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0">
+                <Sparkles size={16} className="text-blue-600" />
+              </div>
               <div>
-                <p className="text-sm font-bold text-gray-800">AI Summary — {reportType === "weekly" ? "This Week" : "This Month"}</p>
+                <p className="text-sm font-bold text-gray-800">
+                  AI Summary — {reportType === "weekly" ? "This Week" : "This Month"}
+                </p>
                 <p className="text-xs text-gray-400">{today.toLocaleDateString("en-IN", { month: "long", year: "numeric" })}</p>
               </div>
             </div>
-            {reportGenerated && <button onClick={downloadReport} className="flex items-center gap-1.5 text-xs text-blue-600 font-medium hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg transition"><Download size={13} /> Download Report</button>}
+            {reportGenerated && (
+              <button
+                onClick={downloadReport}
+                className="flex items-center gap-1.5 text-xs text-blue-600 font-medium hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg transition self-start xs:self-auto shrink-0"
+              >
+                <Download size={13} /> Download Report
+              </button>
+            )}
           </div>
-          <div className="px-6 py-5">
+
+          {/* Card body */}
+          <div className="px-4 sm:px-6 py-4 sm:py-5">
             {!reportGenerated && !isGenerating && (
-              <div className="text-center py-10">
-                <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3"><FileText size={24} className="text-gray-300" /></div>
+              <div className="text-center py-8 sm:py-10">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                  <FileText size={22} className="text-gray-300" />
+                </div>
                 <p className="text-gray-400 text-sm">Click <strong>Generate Report</strong> to get your AI-powered summary</p>
                 <p className="text-gray-300 text-xs mt-1">Uses your live campaign, project & attendance data</p>
               </div>
             )}
+
             {isGenerating && (
               <div className="space-y-3 py-4">
-                <div className="flex items-center gap-3 mb-4"><RefreshCw size={16} className="text-blue-500 animate-spin" /><span className="text-sm text-gray-500">AI is analyzing your {reportType} data...</span></div>
-                {[100, 85, 70].map((w, i) => <div key={i} className="h-3 bg-gray-100 rounded-full animate-pulse" style={{ width: `${w}%` }} />)}
+                <div className="flex items-center gap-3 mb-4">
+                  <RefreshCw size={16} className="text-blue-500 animate-spin" />
+                  <span className="text-sm text-gray-500">AI is analyzing your {reportType} data...</span>
+                </div>
+                {[100, 85, 70].map((w, i) => (
+                  <div key={i} className="h-3 bg-gray-100 rounded-full animate-pulse" style={{ width: `${w}%` }} />
+                ))}
               </div>
             )}
+
             {reportGenerated && aiSummary && (
               <div>
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-5"><p className="text-sm text-gray-700 leading-relaxed">{aiSummary}</p></div>
-                <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider mb-3">Full Breakdown</h3>
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-3 sm:p-4 mb-4 sm:mb-5">
+                  <p className="text-sm text-gray-700 leading-relaxed">{aiSummary}</p>
+                </div>
+
+                <h3 className="text-xs sm:text-sm font-bold text-gray-600 uppercase tracking-wider mb-3">Full Breakdown</h3>
+
+                {/* Breakdown rows — responsive label truncation */}
                 <div className="divide-y divide-gray-50">
                   {[
-                    { label: "Total Reach", value: totalReach.toLocaleString(), badge: null },
-                    { label: "Total Clicks", value: totalClicks.toLocaleString(), badge: `${ctr}% CTR` },
-                    { label: "Conversions", value: totalConversions.toLocaleString(), badge: `${convRate}% rate` },
-                    { label: "Total Budget", value: `Rs${totalBudget.toLocaleString()}`, badge: null },
-                    { label: "Total Spent", value: `Rs${totalSpent.toLocaleString()}`, badge: `${roi}% ROI` },
-                    { label: "Active Campaigns", value: activeCampaigns.toString(), badge: null },
-                    { label: "Top Campaign", value: topCampaign?.name || "—", badge: topCampaign ? `${topCampaign.conversions} conv.` : null },
-                    { label: "Active Projects", value: projects.length.toString(), badge: overdueProjects > 0 ? `${overdueProjects} overdue` : "On track" },
+                    { label: "Total Reach",      value: totalReach.toLocaleString(),       badge: null },
+                    { label: "Total Clicks",     value: totalClicks.toLocaleString(),      badge: `${ctr}% CTR` },
+                    { label: "Conversions",      value: totalConversions.toLocaleString(), badge: `${convRate}% rate` },
+                    { label: "Total Budget",     value: `Rs${totalBudget.toLocaleString()}`, badge: null },
+                    { label: "Total Spent",      value: `Rs${totalSpent.toLocaleString()}`, badge: `${roi}% ROI` },
+                    { label: "Active Campaigns", value: activeCampaigns.toString(),         badge: null },
+                    { label: "Top Campaign",     value: topCampaign?.name || "—",           badge: topCampaign ? `${topCampaign.conversions} conv.` : null },
+                    { label: "Active Projects",  value: projects.length.toString(),         badge: overdueProjects > 0 ? `${overdueProjects} overdue` : "On track" },
                   ].map(row => (
-                    <div key={row.label} className="flex items-center justify-between py-2.5">
-                      <span className="text-sm text-gray-500">{row.label}</span>
-                      <div className="flex items-center gap-2">
-                        {row.badge && <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{row.badge}</span>}
-                        <span className="text-sm font-semibold text-gray-800">{row.value}</span>
+                    <div key={row.label} className="flex items-center justify-between py-2.5 gap-2">
+                      <span className="text-xs sm:text-sm text-gray-500 shrink-0">{row.label}</span>
+                      <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                        {row.badge && (
+                          <span className="hidden xs:inline text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full whitespace-nowrap">{row.badge}</span>
+                        )}
+                        <span className="text-xs sm:text-sm font-semibold text-gray-800 truncate max-w-[120px] sm:max-w-none">{row.value}</span>
                       </div>
                     </div>
                   ))}
@@ -133,26 +199,40 @@ export default function ReportsPage() {
             )}
           </div>
         </div>
+
+        {/* Campaign Breakdown */}
         {campaigns.length > 0 && (
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100"><p className="text-sm font-bold text-gray-800">Campaign Breakdown</p><p className="text-xs text-gray-400">Performance by campaign</p></div>
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100">
+              <p className="text-sm font-bold text-gray-800">Campaign Breakdown</p>
+              <p className="text-xs text-gray-400">Performance by campaign</p>
+            </div>
             <div className="divide-y divide-gray-50">
-              {[...campaigns].sort((a: any, b: any) => (b.conversions || 0) - (a.conversions || 0)).slice(0, 5).map((c: any, i) => {
-                const pct = totalConversions > 0 ? Math.round(((c.conversions || 0) / totalConversions) * 100) : 0;
-                const colors = ["bg-blue-500", "bg-green-500", "bg-purple-500", "bg-orange-500", "bg-pink-500"];
-                return (
-                  <div key={c.id} className="px-6 py-3">
-                    <div className="flex justify-between items-center mb-1.5">
-                      <span className="text-sm font-medium text-gray-700">{c.name}</span>
-                      <div className="flex items-center gap-2"><span className="text-xs text-gray-400">{c.status}</span><span className="text-sm font-bold text-gray-800">{c.conversions || 0} conv.</span></div>
+              {[...campaigns]
+                .sort((a: any, b: any) => (b.conversions || 0) - (a.conversions || 0))
+                .slice(0, 5)
+                .map((c: any, i) => {
+                  const pct = totalConversions > 0 ? Math.round(((c.conversions || 0) / totalConversions) * 100) : 0;
+                  const colors = ["bg-blue-500", "bg-green-500", "bg-purple-500", "bg-orange-500", "bg-pink-500"];
+                  return (
+                    <div key={c.id} className="px-4 sm:px-6 py-3">
+                      <div className="flex justify-between items-start sm:items-center gap-2 mb-1.5">
+                        <span className="text-sm font-medium text-gray-700 truncate min-w-0 flex-1">{c.name}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <span className="text-xs text-gray-400 hidden xs:inline">{c.status}</span>
+                          <span className="text-xs sm:text-sm font-bold text-gray-800 whitespace-nowrap">{c.conversions || 0} conv.</span>
+                        </div>
+                      </div>
+                      <div className="w-full bg-gray-100 rounded-full h-1.5">
+                        <div className={`h-1.5 rounded-full ${colors[i % colors.length]}`} style={{ width: `${Math.max(pct, 2)}%` }} />
+                      </div>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-1.5"><div className={`h-1.5 rounded-full ${colors[i % colors.length]}`} style={{ width: `${Math.max(pct, 2)}%` }} /></div>
-                  </div>
-                );
-              })}
+                  );
+                })}
             </div>
           </div>
         )}
+
       </div>
     </DashboardWrapper>
   );

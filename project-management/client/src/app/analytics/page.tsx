@@ -9,54 +9,23 @@ import {
 } from "@/state/api";
 import { useMemo, useState } from "react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-  PieChart,
-  Pie,
-  AreaChart,
-  Area,
-  LineChart,
-  Line,
-  Legend,
-  CartesianGrid,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  Radar,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
+  PieChart, Pie, AreaChart, Area, LineChart, Line, Legend,
+  CartesianGrid, RadarChart, PolarGrid, PolarAngleAxis, Radar,
 } from "recharts";
-import {
-  Users,
-  Briefcase,
-  CheckSquare,
-  Clock,
-  BarChart2,
-  AlertTriangle,
-} from "lucide-react";
+import { Users, Briefcase, CheckSquare, Clock, BarChart2, AlertTriangle } from "lucide-react";
 
-// ─── palette ─────────────────────────────────────────────────────────────────
 const C = {
-  blue: "#2563eb",
-  blueLight: "#eff6ff",
-  green: "#059669",
-  greenLight: "#ecfdf5",
-  amber: "#d97706",
-  red: "#dc2626",
-  redLight: "#fef2f2",
+  blue: "#2563eb", blueLight: "#eff6ff",
+  green: "#059669", greenLight: "#ecfdf5",
+  amber: "#d97706", red: "#dc2626", redLight: "#fef2f2",
   indigo: "#4f46e5",
   chart: ["#2563eb", "#059669", "#d97706", "#dc2626", "#4f46e5", "#7c3aed"],
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  "To Do": C.blue,
-  "In Progress": C.amber,
-  "Under Review": C.indigo,
-  Completed: C.green,
-  Done: C.green,
+  "To Do": C.blue, "In Progress": C.amber,
+  "Under Review": C.indigo, Completed: C.green, Done: C.green,
 };
 
 const SEED_MONTHLY = [
@@ -68,7 +37,6 @@ const SEED_MONTHLY = [
   { month: "Jun", created: 25, completed: 20, overdue: 3 },
 ];
 
-// ─── CSV export helper ────────────────────────────────────────────────────────
 function exportCSV(filename: string, rows: Record<string, any>[]) {
   if (!rows.length) return;
   const keys = Object.keys(rows[0]);
@@ -81,15 +49,11 @@ function exportCSV(filename: string, rows: Record<string, any>[]) {
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
-// ─── sub-components ───────────────────────────────────────────────────────────
 const CustomTooltip = ({ active, payload, label }: any) =>
   active && payload?.length ? (
     <div className="bg-white border border-gray-100 rounded-xl shadow-lg p-3 text-xs min-w-[120px]">
@@ -106,51 +70,31 @@ const CustomTooltip = ({ active, payload, label }: any) =>
     </div>
   ) : null;
 
-function StatCard({
-  label,
-  value,
-  sub,
-  icon: Icon,
-  color,
-  bg,
-}: {
-  label: string;
-  value: number | string;
-  sub?: string;
-  icon: any;
-  color: string;
-  bg: string;
+function StatCard({ label, value, sub, icon: Icon, color, bg }: {
+  label: string; value: number | string; sub?: string;
+  icon: any; color: string; bg: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm flex flex-col gap-3">
+    <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm flex flex-col gap-2 sm:gap-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+        <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest leading-tight">
           {label}
         </span>
-        <span
-          className="w-9 h-9 rounded-xl flex items-center justify-center"
-          style={{ background: bg }}
-        >
-          <Icon size={18} color={color} />
+        <span className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: bg }}>
+          <Icon size={16} color={color} />
         </span>
       </div>
-      <p className="text-3xl font-extrabold text-gray-900 tracking-tight">{value}</p>
+      <p className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">{value}</p>
       {sub && <p className="text-xs text-gray-400">{sub}</p>}
     </div>
   );
 }
 
-function SectionCard({
-  title,
-  children,
-  className = "",
-}: {
-  title: string;
-  children: React.ReactNode;
-  className?: string;
+function SectionCard({ title, children, className = "" }: {
+  title: string; children: React.ReactNode; className?: string;
 }) {
   return (
-    <div className={`bg-white rounded-2xl p-5 border border-gray-100 shadow-sm ${className}`}>
+    <div className={`bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 shadow-sm ${className}`}>
       <h2 className="font-bold text-gray-800 text-sm mb-4">{title}</h2>
       {children}
     </div>
@@ -159,10 +103,7 @@ function SectionCard({
 
 function EmptyChart({ height = 200 }: { height?: number }) {
   return (
-    <div
-      className="flex flex-col items-center justify-center text-gray-300 gap-2"
-      style={{ height }}
-    >
+    <div className="flex flex-col items-center justify-center text-gray-300 gap-2" style={{ height }}>
       <BarChart2 size={28} />
       <span className="text-xs">No data available</span>
     </div>
@@ -171,33 +112,21 @@ function EmptyChart({ height = 200 }: { height?: number }) {
 
 function Spinner() {
   return (
-    <svg
-      className="w-4 h-4 animate-spin"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-      strokeWidth={2}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-      />
+    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round"
+        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
     </svg>
   );
 }
 
-// ─── main page ────────────────────────────────────────────────────────────────
 export default function AnalyticsPage() {
   const now = new Date();
   const [selectedProjectId, setSelectedProjectId] = useState<number | "all">("all");
 
-  // ── queries ────────────────────────────────────────────────────────────────
   const { data: projects = [], isLoading: projLoading } = useGetProjectsQuery();
   const { data: users = [] } = useGetUsersQuery();
 
-  const targetProjectId =
-    selectedProjectId === "all" ? projects[0]?.id ?? 0 : selectedProjectId;
+  const targetProjectId = selectedProjectId === "all" ? projects[0]?.id ?? 0 : selectedProjectId;
 
   const { data: tasks = [], isLoading: taskLoading } = useGetTasksQuery(
     { projectId: targetProjectId },
@@ -209,22 +138,15 @@ export default function AnalyticsPage() {
     year: now.getFullYear(),
   });
 
-  // ── derived metrics ────────────────────────────────────────────────────────
   const tasksByStatus = useMemo(() => {
     const map: Record<string, number> = {};
-    tasks.forEach((t) => {
-      const s = t.status ?? "To Do";
-      map[s] = (map[s] ?? 0) + 1;
-    });
+    tasks.forEach((t) => { const s = t.status ?? "To Do"; map[s] = (map[s] ?? 0) + 1; });
     return Object.entries(map).map(([name, value]) => ({ name, value }));
   }, [tasks]);
 
   const tasksByPriority = useMemo(() => {
     const map: Record<string, number> = {};
-    tasks.forEach((t) => {
-      const p = t.priority ?? "Medium";
-      map[p] = (map[p] ?? 0) + 1;
-    });
+    tasks.forEach((t) => { const p = t.priority ?? "Medium"; map[p] = (map[p] ?? 0) + 1; });
     return Object.entries(map).map(([name, value]) => ({ name, value }));
   }, [tasks]);
 
@@ -232,20 +154,10 @@ export default function AnalyticsPage() {
     () => tasks.filter((t) => t.status === "Completed" || t.status === "Done").length,
     [tasks]
   );
-
-  const completionRate = tasks.length
-    ? Math.round((completedCount / tasks.length) * 100)
-    : 0;
+  const completionRate = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
 
   const overdueTasks = useMemo(
-    () =>
-      tasks.filter(
-        (t) =>
-          t.dueDate &&
-          new Date(t.dueDate) < now &&
-          t.status !== "Completed" &&
-          t.status !== "Done"
-      ).length,
+    () => tasks.filter((t) => t.dueDate && new Date(t.dueDate) < now && t.status !== "Completed" && t.status !== "Done").length,
     [tasks]
   );
 
@@ -257,155 +169,93 @@ export default function AnalyticsPage() {
 
   const radarData = [
     { subject: "Completion", A: completionRate },
-    {
-      subject: "On-Time",
-      A: tasks.length
-        ? Math.round(((tasks.length - overdueTasks) / tasks.length) * 100)
-        : 0,
-    },
+    { subject: "On-Time", A: tasks.length ? Math.round(((tasks.length - overdueTasks) / tasks.length) * 100) : 0 },
     { subject: "Team Size", A: Math.min(users.length * 10, 100) },
     { subject: "Projects", A: Math.min(projects.length * 12, 100) },
     { subject: "Attendance", A: attendancePct ?? 0 },
   ];
 
-  const activeProjects = projects.filter(
-    (p) => !p.endDate || new Date(p.endDate) >= now
-  ).length;
+  const activeProjects = projects.filter((p) => !p.endDate || new Date(p.endDate) >= now).length;
 
-const handleExportProjects = () =>
-    exportCSV(
-      "projects.csv",
-      projects.map((p) => ({
-        ID: p.id,
-        Name: p.name,
-        Description: p.description ?? "",
-        "Start Date": p.startDate ?? "",
-        "End Date": p.endDate ?? "",
-        Status: p.endDate && new Date(p.endDate) < now ? "Completed" : "Active",
-      }))
-    );
+  const handleExportProjects = () =>
+    exportCSV("projects.csv", projects.map((p) => ({
+      ID: p.id, Name: p.name, Description: p.description ?? "",
+      "Start Date": p.startDate ?? "", "End Date": p.endDate ?? "",
+      Status: p.endDate && new Date(p.endDate) < now ? "Completed" : "Active",
+    })));
 
   const isLoading = projLoading || taskLoading;
 
   return (
     <DashboardWrapper>
-      <div className="min-h-screen p-6 bg-slate-50">
-        <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
+      <div className="min-h-screen p-4 sm:p-6 bg-slate-50">
+
+        {/* ── Header ── */}
+        <div className="flex flex-wrap items-start justify-between gap-3 mb-6 sm:mb-8">
           <div>
             <div className="flex items-center gap-2 mb-1">
               <BarChart2 size={20} color={C.blue} />
-              <h1 className="text-2xl font-extrabold text-gray-900 tracking-tight">
-                Analytics
-              </h1>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 tracking-tight">Analytics</h1>
             </div>
             <p className="text-sm text-gray-400">
               {now.toLocaleDateString("en-IN", { dateStyle: "long" })}
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Project filter */}
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <select
-              className="px-3 py-2 text-sm bg-white border border-gray-200 rounded-xl text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="flex-1 sm:flex-none px-3 py-2 text-sm bg-white border border-gray-200 rounded-xl text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
               value={selectedProjectId}
-              onChange={(e) =>
-                setSelectedProjectId(
-                  e.target.value === "all" ? "all" : Number(e.target.value)
-                )
-              }
+              onChange={(e) => setSelectedProjectId(e.target.value === "all" ? "all" : Number(e.target.value))}
             >
               <option value="all">All Projects</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
+              {projects.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
 
             <button
               onClick={handleExportProjects}
               disabled={projects.length === 0}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl shadow-sm hover:bg-blue-700 disabled:opacity-40 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-xl shadow-sm hover:bg-blue-700 disabled:opacity-40 transition-colors whitespace-nowrap"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                />
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              Export Projects
+              Export
             </button>
           </div>
         </div>
 
         {isLoading && (
           <div className="flex items-center gap-2 text-sm text-blue-500 mb-4">
-            <Spinner />
-            Loading data…
+            <Spinner /> Loading data…
           </div>
         )}
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <StatCard
-            label="Total Projects"
-            value={projects.length}
-            sub={`${activeProjects} active`}
-            icon={Briefcase}
-            color={C.blue}
-            bg={C.blueLight}
-          />
-          <StatCard
-            label="Total Tasks"
-            value={tasks.length}
-            sub={`${completedCount} completed`}
-            icon={CheckSquare}
-            color={C.green}
-            bg={C.greenLight}
-          />
-          <StatCard
-            label="Team Members"
-            value={users.length}
-            sub="across all teams"
-            icon={Users}
-            color={C.indigo}
-            bg="#eef2ff"
-          />
-          <StatCard
-            label="Overdue Tasks"
-            value={overdueTasks}
-            sub={overdueTasks > 0 ? "need attention" : "all on schedule"}
+        {/* ── Stat Cards ── */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6">
+          <StatCard label="Total Projects" value={projects.length} sub={`${activeProjects} active`} icon={Briefcase} color={C.blue} bg={C.blueLight} />
+          <StatCard label="Total Tasks" value={tasks.length} sub={`${completedCount} completed`} icon={CheckSquare} color={C.green} bg={C.greenLight} />
+          <StatCard label="Team Members" value={users.length} sub="across all teams" icon={Users} color={C.indigo} bg="#eef2ff" />
+          <StatCard label="Overdue Tasks" value={overdueTasks} sub={overdueTasks > 0 ? "need attention" : "all on schedule"}
             icon={overdueTasks > 0 ? AlertTriangle : Clock}
             color={overdueTasks > 0 ? C.red : C.green}
             bg={overdueTasks > 0 ? C.redLight : C.greenLight}
           />
         </div>
 
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-5 mb-6 flex flex-wrap items-center justify-between gap-4 text-white shadow-md">
+        {/* ── Completion Banner ── */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-4 sm:p-5 mb-5 sm:mb-6 flex flex-wrap items-center justify-between gap-4 text-white shadow-md">
           <div>
             <p className="text-sm font-medium opacity-80 mb-1">Completion Rate</p>
-            <p className="text-4xl font-extrabold tracking-tight">{completionRate}%</p>
-            <p className="text-xs opacity-70 mt-1">
-              {completedCount} of {tasks.length} tasks completed
-            </p>
+            <p className="text-3xl sm:text-4xl font-extrabold tracking-tight">{completionRate}%</p>
+            <p className="text-xs opacity-70 mt-1">{completedCount} of {tasks.length} tasks completed</p>
           </div>
-          <div className="flex flex-col items-end gap-2 flex-1 max-w-sm">
+          <div className="flex flex-col items-end gap-2 flex-1 min-w-[160px] max-w-sm">
             <div className="w-full bg-white/20 rounded-full h-3">
-              <div
-                className="h-3 rounded-full bg-white transition-all duration-700"
-                style={{ width: `${completionRate}%` }}
-              />
+              <div className="h-3 rounded-full bg-white transition-all duration-700" style={{ width: `${completionRate}%` }} />
             </div>
             {attendancePct !== null && (
-              <span className="text-xs opacity-70">
-                Attendance this month: {attendancePct}%
-              </span>
+              <span className="text-xs opacity-70">Attendance this month: {attendancePct}%</span>
             )}
             {overdueTasks > 0 && (
               <span className="text-xs opacity-70">⚠ {overdueTasks} overdue</span>
@@ -413,9 +263,10 @@ const handleExportProjects = () =>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        {/* ── Row 1: Area Chart + Pie ── */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
           <SectionCard title="Monthly Task Activity" className="md:col-span-2">
-            <ResponsiveContainer width="100%" height={230}>
+            <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={SEED_MONTHLY}>
                 <defs>
                   <linearGradient id="gBlue" x1="0" y1="0" x2="0" y2="1">
@@ -428,8 +279,8 @@ const handleExportProjects = () =>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={28} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
                 <Area type="monotone" dataKey="created" stroke={C.blue} strokeWidth={2} fill="url(#gBlue)" name="Created" />
@@ -440,26 +291,13 @@ const handleExportProjects = () =>
           </SectionCard>
 
           <SectionCard title="Task Status Breakdown">
-            {tasksByStatus.length === 0 ? (
-              <EmptyChart />
-            ) : (
+            {tasksByStatus.length === 0 ? <EmptyChart /> : (
               <>
-                <ResponsiveContainer width="100%" height={175}>
+                <ResponsiveContainer width="100%" height={160}>
                   <PieChart>
-                    <Pie
-                      data={tasksByStatus}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={48}
-                      outerRadius={78}
-                      paddingAngle={3}
-                      dataKey="value"
-                    >
+                    <Pie data={tasksByStatus} cx="50%" cy="50%" innerRadius={44} outerRadius={68} paddingAngle={3} dataKey="value">
                       {tasksByStatus.map((entry, i) => (
-                        <Cell
-                          key={i}
-                          fill={STATUS_COLORS[entry.name] ?? C.chart[i % C.chart.length]}
-                        />
+                        <Cell key={i} fill={STATUS_COLORS[entry.name] ?? C.chart[i % C.chart.length]} />
                       ))}
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />
@@ -469,13 +307,8 @@ const handleExportProjects = () =>
                   {tasksByStatus.map((entry, i) => (
                     <div key={i} className="flex items-center justify-between text-xs">
                       <div className="flex items-center gap-2">
-                        <span
-                          className="w-2 h-2 rounded-full"
-                          style={{
-                            background:
-                              STATUS_COLORS[entry.name] ?? C.chart[i % C.chart.length],
-                          }}
-                        />
+                        <span className="w-2 h-2 rounded-full shrink-0"
+                          style={{ background: STATUS_COLORS[entry.name] ?? C.chart[i % C.chart.length] }} />
                         <span className="text-gray-500">{entry.name}</span>
                       </div>
                       <span className="font-bold text-gray-700">{entry.value}</span>
@@ -487,22 +320,18 @@ const handleExportProjects = () =>
           </SectionCard>
         </div>
 
-        {/* ── Row 2: Bar + Line + Radar ────────────────────────────────────── */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        {/* ── Row 2: Bar + Line + Radar ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-5">
           <SectionCard title="Tasks by Priority">
-            {tasksByPriority.length === 0 ? (
-              <EmptyChart />
-            ) : (
+            {tasksByPriority.length === 0 ? <EmptyChart /> : (
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={tasksByPriority} barSize={28}>
+                <BarChart data={tasksByPriority} barSize={24}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} allowDecimals={false} width={24} />
                   <Tooltip content={<CustomTooltip />} />
                   <Bar dataKey="value" radius={[6, 6, 0, 0]} name="Tasks">
-                    {tasksByPriority.map((_, i) => (
-                      <Cell key={i} fill={C.chart[i % C.chart.length]} />
-                    ))}
+                    {tasksByPriority.map((_, i) => <Cell key={i} fill={C.chart[i % C.chart.length]} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
@@ -513,20 +342,20 @@ const handleExportProjects = () =>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={SEED_MONTHLY}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} width={24} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                <Line type="monotone" dataKey="completed" stroke={C.blue} strokeWidth={2.5} dot={{ r: 4, fill: C.blue, strokeWidth: 0 }} activeDot={{ r: 6 }} name="Completed" />
-                <Line type="monotone" dataKey="overdue" stroke={C.red} strokeWidth={2} strokeDasharray="4 2" dot={false} name="Overdue" />
+                <Line type="monotone" dataKey="completed" stroke={C.blue} strokeWidth={2.5}
+                  dot={{ r: 4, fill: C.blue, strokeWidth: 0 }} activeDot={{ r: 6 }} name="Completed" />
+                <Line type="monotone" dataKey="overdue" stroke={C.red} strokeWidth={2}
+                  strokeDasharray="4 2" dot={false} name="Overdue" />
               </LineChart>
             </ResponsiveContainer>
           </SectionCard>
 
-          <SectionCard title="Team Health Score">
-            <p className="text-xs text-gray-400 -mt-2 mb-3">
-              Composite of 5 live metrics (0–100)
-            </p>
+          <SectionCard title="Team Health Score" className="sm:col-span-2 md:col-span-1">
+            <p className="text-xs text-gray-400 -mt-2 mb-3">Composite of 5 live metrics (0–100)</p>
             <ResponsiveContainer width="100%" height={195}>
               <RadarChart data={radarData}>
                 <PolarGrid stroke="#e2e8f0" />
@@ -538,9 +367,9 @@ const handleExportProjects = () =>
           </SectionCard>
         </div>
 
-        {/* ── Projects table ───────────────────────────────────────────────── */}
+        {/* ── Projects Table ── */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between px-4 sm:px-5 py-4 border-b border-gray-100">
             <h2 className="font-bold text-gray-800 text-sm">Projects Summary</h2>
             <div className="flex items-center gap-3">
               <span className="text-xs text-gray-400">{projects.length} total</span>
@@ -556,68 +385,82 @@ const handleExportProjects = () =>
 
           {projLoading ? (
             <div className="flex items-center justify-center py-12 text-gray-400 text-sm gap-2">
-              <Spinner />
-              Loading projects…
+              <Spinner /> Loading projects…
             </div>
           ) : projects.length === 0 ? (
-            <div className="flex items-center justify-center py-12 text-gray-300 text-sm">
-              No projects found
-            </div>
+            <div className="flex items-center justify-center py-12 text-gray-300 text-sm">No projects found</div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="text-xs text-gray-400 uppercase tracking-widest bg-gray-50">
-                    <th className="text-left px-5 py-3 font-semibold">#</th>
-                    <th className="text-left px-5 py-3 font-semibold">Project</th>
-                    <th className="text-left px-5 py-3 font-semibold">Description</th>
-                    <th className="text-left px-5 py-3 font-semibold">Start Date</th>
-                    <th className="text-left px-5 py-3 font-semibold">End Date</th>
-                    <th className="text-left px-5 py-3 font-semibold">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {projects.map((p, i) => {
-                    const isEnded = p.endDate && new Date(p.endDate) < now;
-                    const status = isEnded ? "Completed" : "Active";
-                    return (
-                      <tr
-                        key={p.id}
-                        className="border-t border-gray-50 hover:bg-blue-50/30 transition-colors"
-                      >
-                        <td className="px-5 py-3 text-gray-400 text-xs">{i + 1}</td>
-                        <td className="px-5 py-3 font-semibold text-gray-800">{p.name}</td>
-                        <td className="px-5 py-3 text-gray-400 max-w-xs truncate">
-                          {p.description ?? "—"}
-                        </td>
-                        <td className="px-5 py-3 text-gray-500 text-xs">
-                          {p.startDate
-                            ? new Date(p.startDate).toLocaleDateString("en-IN")
-                            : "—"}
-                        </td>
-                        <td className="px-5 py-3 text-gray-500 text-xs">
-                          {p.endDate
-                            ? new Date(p.endDate).toLocaleDateString("en-IN")
-                            : "—"}
-                        </td>
-                        <td className="px-5 py-3">
-                          <span
-                            className="px-2.5 py-1 rounded-full text-xs font-semibold"
-                            style={{
-                              background:
-                                status === "Completed" ? C.greenLight : C.blueLight,
-                              color: status === "Completed" ? C.green : C.blue,
-                            }}
-                          >
-                            {status}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <>
+              {/* Desktop Table */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-xs text-gray-400 uppercase tracking-widest bg-gray-50">
+                      <th className="text-left px-5 py-3 font-semibold">#</th>
+                      <th className="text-left px-5 py-3 font-semibold">Project</th>
+                      <th className="text-left px-5 py-3 font-semibold">Description</th>
+                      <th className="text-left px-5 py-3 font-semibold">Start Date</th>
+                      <th className="text-left px-5 py-3 font-semibold">End Date</th>
+                      <th className="text-left px-5 py-3 font-semibold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {projects.map((p, i) => {
+                      const isEnded = p.endDate && new Date(p.endDate) < now;
+                      const status = isEnded ? "Completed" : "Active";
+                      return (
+                        <tr key={p.id} className="border-t border-gray-50 hover:bg-blue-50/30 transition-colors">
+                          <td className="px-5 py-3 text-gray-400 text-xs">{i + 1}</td>
+                          <td className="px-5 py-3 font-semibold text-gray-800">{p.name}</td>
+                          <td className="px-5 py-3 text-gray-400 max-w-xs truncate">{p.description ?? "—"}</td>
+                          <td className="px-5 py-3 text-gray-500 text-xs">
+                            {p.startDate ? new Date(p.startDate).toLocaleDateString("en-IN") : "—"}
+                          </td>
+                          <td className="px-5 py-3 text-gray-500 text-xs">
+                            {p.endDate ? new Date(p.endDate).toLocaleDateString("en-IN") : "—"}
+                          </td>
+                          <td className="px-5 py-3">
+                            <span className="px-2.5 py-1 rounded-full text-xs font-semibold"
+                              style={{ background: status === "Completed" ? C.greenLight : C.blueLight, color: status === "Completed" ? C.green : C.blue }}>
+                              {status}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Mobile Cards */}
+              <div className="sm:hidden divide-y divide-gray-50">
+                {projects.map((p, i) => {
+                  const isEnded = p.endDate && new Date(p.endDate) < now;
+                  const status = isEnded ? "Completed" : "Active";
+                  return (
+                    <div key={p.id} className="px-4 py-3">
+                      <div className="flex justify-between items-start gap-2 mb-1.5">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <span className="text-xs text-gray-400 shrink-0">{i + 1}.</span>
+                          <p className="text-sm font-semibold text-gray-800 truncate">{p.name}</p>
+                        </div>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-semibold shrink-0"
+                          style={{ background: status === "Completed" ? C.greenLight : C.blueLight, color: status === "Completed" ? C.green : C.blue }}>
+                          {status}
+                        </span>
+                      </div>
+                      {p.description && (
+                        <p className="text-xs text-gray-400 mb-1.5 line-clamp-1">{p.description}</p>
+                      )}
+                      <div className="flex gap-4 text-xs text-gray-400">
+                        <span>Start: {p.startDate ? new Date(p.startDate).toLocaleDateString("en-IN") : "—"}</span>
+                        <span>End: {p.endDate ? new Date(p.endDate).toLocaleDateString("en-IN") : "—"}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       </div>
