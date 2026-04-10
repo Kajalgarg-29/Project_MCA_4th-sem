@@ -759,7 +759,7 @@ export default function Home() {
             <div className="flex justify-between items-center px-5 py-4 border-b border-gray-100">
               <h3 className="font-bold text-gray-800">Active Projects</h3>
               <Link
-                href="/"
+                href="/projects"
                 className="text-xs text-blue-500 font-medium hover:text-blue-700 flex items-center gap-1"
               >
                 View all <ChevronRight size={12} />
