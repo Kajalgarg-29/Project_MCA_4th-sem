@@ -34,11 +34,7 @@ export default function SEODashboard() {
     <div className="p-6 max-w-5xl mx-auto">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-gray-900?text-white mb-1">SEO AI Suggestions</h1>
-<<<<<<< HEAD
         <p className="text-sm text-gray-500?text-white">Enter your website URL to get AI-powered keyword, content, and competitor insights.</p>
-=======
-        <p className="text-sm text-gray-500">Enter your website URL to get AI-powered keyword, content, and competitor insights.</p>
->>>>>>> 2033ba7 (added chatbot)
       </div>
       <div className="flex gap-3 mb-6">
         <input type="text" value={url} onChange={e => setUrl(e.target.value)}
