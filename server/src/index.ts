@@ -11,6 +11,7 @@ import attendanceRoutes from "./routes/attendanceRoutes";
 import campaignRoutes from "./routes/campaignRoutes";
 import eventRoutes from "./routes/eventRoutes";
 import seoRoutes from "./routes/seoRoutes";
+import chatRoutes from "./routes/chatRoutes"; 
 
 dotenv.config();
 const app = express();
@@ -27,6 +28,7 @@ app.use("/attendance", attendanceRoutes);
 app.use("/campaigns", campaignRoutes);
 app.use("/events", eventRoutes);
 app.use("/seo", seoRoutes);
+app.use("/chat", chatRoutes); // ✅
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

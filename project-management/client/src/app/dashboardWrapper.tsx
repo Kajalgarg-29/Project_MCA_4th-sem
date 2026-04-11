@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
+import { ChatbotTrigger } from "@/components/AIChatbot"; 
 
 export default function DashboardWrapper({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -22,7 +23,6 @@ export default function DashboardWrapper({ children }: { children: React.ReactNo
     }
   }, [status, session, router]);
 
-  // Apply saved theme on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -40,16 +40,16 @@ export default function DashboardWrapper({ children }: { children: React.ReactNo
 
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
-      {/* Sidebar receives open state + toggle handler */}
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Main content — offset by sidebar width on desktop only */}
       <div className="flex-1 flex flex-col min-h-screen overflow-hidden lg:ml-64">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-950 transition-colors duration-200">
           {children}
         </main>
       </div>
+
+      <ChatbotTrigger /> {/* ✅ no props needed */}
     </div>
   );
 }
