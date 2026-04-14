@@ -91,7 +91,6 @@ export const api = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
     prepareHeaders: async (headers) => {
-      // First try localStorage (email/password login)
       if (typeof window !== "undefined") {
         const token = localStorage.getItem("token");
         if (token) {
